@@ -76,7 +76,7 @@ export default function SimulationProvider({ children }: { children: React.React
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase?.removeChannel(channel);
     };
   }, []);
 
