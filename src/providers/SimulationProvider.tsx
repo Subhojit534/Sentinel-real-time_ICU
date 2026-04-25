@@ -11,7 +11,11 @@ interface SimulationContextType {
   loading: boolean;
 }
 
-const SimulationContext = createContext<SimulationContextType>({ patients: [], alerts: [], loading: true });
+const SimulationContext = createContext<SimulationContextType>({
+  patients: [],
+  alerts: [],
+  loading: true,
+});
 
 export const useSimulation = () => useContext(SimulationContext);
 
@@ -24,10 +28,7 @@ export default function SimulationProvider({ children }: { children: React.React
   useEffect(() => {
     async function loadData() {
       try {
-        const [pts, alts] = await Promise.all([
-          api.patients.list(),
-          api.alerts.list()
-        ]);
+        const [pts, alts] = await Promise.all([api.patients.list(), api.alerts.list()]);
         setPatients(pts);
         setAlerts(alts);
       } catch (err) {
@@ -43,22 +44,35 @@ export default function SimulationProvider({ children }: { children: React.React
   useEffect(() => {
     if (!supabase) return;
 
-    const channel = supabase.channel('icu_realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'vitals_current' }, (payload: any) => {
-        setPatients(prev => prev.map(p => {
-          if (p.id === payload.new.patient_id) {
-            return { ...p, vitals: { ...p.vitals, ...payload.new } };
-          }
-          return p;
-        }));
-      })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'alerts' }, (payload: any) => {
-        const newAlert = payload.new as Alert;
-        setAlerts(prev => [newAlert, ...prev]);
-        if (newAlert.severity === 'critical') {
-          toast.error(`CRITICAL ALERT: ${newAlert.type} detected for patient in ${newAlert.wardId}`);
+    const channel = supabase
+      .channel('icu_realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'vitals_current' },
+        (payload: any) => {
+          setPatients((prev) =>
+            prev.map((p) => {
+              if (p.id === payload.new.patient_id) {
+                return { ...p, vitals: { ...p.vitals, ...payload.new } };
+              }
+              return p;
+            })
+          );
         }
-      })
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'alerts' },
+        (payload: any) => {
+          const newAlert = payload.new as Alert;
+          setAlerts((prev) => [newAlert, ...prev]);
+          if (newAlert.severity === 'critical') {
+            toast.error(
+              `CRITICAL ALERT: ${newAlert.type} detected for patient in ${newAlert.wardId}`
+            );
+          }
+        }
+      )
       .subscribe();
 
     return () => {
@@ -71,16 +85,24 @@ export default function SimulationProvider({ children }: { children: React.React
     if (loading) return;
 
     const intervalId = setInterval(() => {
-      setPatients(prev => {
-        let alertsToCreate: Alert[] = [];
+      setPatients((prev) => {
+        const alertsToCreate: Alert[] = [];
 
-        const updatedPatients = prev.map(p => {
+        const updatedPatients = prev.map((p) => {
           if (!p.vitals) return p;
 
           // Simulate slight variations
-          const newHr = p.vitals.hr + (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 3);
-          const newSpo2 = Math.min(100, Math.max(80, p.vitals.spo2 + (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 2)));
-          const newSbp = p.vitals.sbp + (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 3);
+          const newHr =
+            p.vitals.hr + (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 3);
+          const newSpo2 = Math.min(
+            100,
+            Math.max(
+              80,
+              p.vitals.spo2 + (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 2)
+            )
+          );
+          const newSbp =
+            p.vitals.sbp + (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 3);
 
           // Calculate AI Risk Score (Threshold Rules)
           let riskScore = p.aiRiskScore;
@@ -119,7 +141,7 @@ export default function SimulationProvider({ children }: { children: React.React
               assignedTo: p.attendingPhysician,
               escalationLevel: 3,
               aiGenerated: true,
-              notes: 'Patient likely to deteriorate in next 3-5 minutes based on trending vitals.'
+              notes: 'Patient likely to deteriorate in next 3-5 minutes based on trending vitals.',
             };
             alertsToCreate.push(newAlert);
           }
@@ -133,16 +155,16 @@ export default function SimulationProvider({ children }: { children: React.React
               hr: newHr,
               spo2: newSpo2,
               sbp: newSbp,
-              updatedAt: new Date().toISOString()
-            }
+              updatedAt: new Date().toISOString(),
+            },
           };
         });
 
         if (alertsToCreate.length > 0) {
-          setAlerts(prevAlerts => [...alertsToCreate, ...prevAlerts]);
-          alertsToCreate.forEach(a => {
+          setAlerts((prevAlerts) => [...alertsToCreate, ...prevAlerts]);
+          alertsToCreate.forEach((a) => {
             toast.error(`Alert sent to doctor: ${a.patientName} (${a.triggerMetric} dropping)`, {
-              description: 'Patient likely to deteriorate in next 3-5 minutes'
+              description: 'Patient likely to deteriorate in next 3-5 minutes',
             });
           });
         }

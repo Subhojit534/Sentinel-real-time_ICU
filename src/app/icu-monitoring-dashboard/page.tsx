@@ -28,7 +28,6 @@ export default function ICUMonitoringDashboard() {
         {/* Main content */}
         <div className="flex-1 min-w-0 overflow-y-auto scrollbar-thin">
           <div className="px-6 py-5 space-y-5 max-w-screen-2xl mx-auto">
-
             {selectedPatientId ? (
               <div>
                 <DashboardCharts
@@ -41,7 +40,9 @@ export default function ICUMonitoringDashboard() {
                 {/* Page header */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="text-xl font-bold text-white tracking-tight">ICU Monitoring Dashboard</h1>
+                    <h1 className="text-xl font-bold text-white tracking-tight">
+                      ICU Monitoring Dashboard
+                    </h1>
                     <p className="text-xs mt-0.5" style={{ color: MUTED }}>
                       Real-time patient vitals across 5 wards · 40 beds monitored
                     </p>
@@ -57,7 +58,6 @@ export default function ICUMonitoringDashboard() {
                 <PatientVitalsGrid onSelectPatient={setSelectedPatientId} />
               </div>
             )}
-
           </div>
         </div>
 

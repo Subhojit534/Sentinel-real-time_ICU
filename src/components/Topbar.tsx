@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { getSession, getInitials } from '@/lib/session';
 
 const WARDS = [
-  { id: 'all',        label: 'All Wards' },
+  { id: 'all', label: 'All Wards' },
   { id: 'ward-icu-a', label: 'ICU Alpha' },
   { id: 'ward-icu-b', label: 'ICU Beta' },
   { id: 'ward-icu-c', label: 'ICU Gamma' },
@@ -32,12 +32,15 @@ export default function Topbar() {
   }, []);
 
   return (
-    <header className="h-14 border-b border-[hsl(220,18%,18%)] flex items-center px-5 gap-4 flex-shrink-0"
-      style={{ backgroundColor: 'hsl(220,20%,8%)' }}>
-
+    <header
+      className="h-14 border-b border-[hsl(220,18%,18%)] flex items-center px-5 gap-4 flex-shrink-0"
+      style={{ backgroundColor: 'hsl(220,20%,8%)' }}
+    >
       {/* Search */}
-      <div className="flex items-center gap-2 rounded-xl px-3 py-1.5 w-64 border"
-        style={{ backgroundColor: 'hsl(222,22%,11%)', borderColor: 'hsl(220,18%,18%)' }}>
+      <div
+        className="flex items-center gap-2 rounded-xl px-3 py-1.5 w-64 border"
+        style={{ backgroundColor: 'hsl(222,22%,11%)', borderColor: 'hsl(220,18%,18%)' }}
+      >
         <Search className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
         <input
           type="text"
@@ -45,13 +48,19 @@ export default function Topbar() {
           placeholder="Search patient, bed, ward..."
           className="bg-transparent text-xs text-white placeholder:text-gray-500 outline-none w-full"
         />
-        <kbd className="text-[9px] text-gray-500 px-1.5 py-0.5 rounded border border-gray-700 font-mono flex-shrink-0"
-          style={{ backgroundColor: 'hsl(220,20%,8%)' }}>⌘K</kbd>
+        <kbd
+          className="text-[9px] text-gray-500 px-1.5 py-0.5 rounded border border-gray-700 font-mono flex-shrink-0"
+          style={{ backgroundColor: 'hsl(220,20%,8%)' }}
+        >
+          ⌘K
+        </kbd>
       </div>
 
       {/* Ward filter pills */}
-      <div className="flex items-center gap-1 rounded-xl p-1 border"
-        style={{ backgroundColor: 'hsl(222,22%,11%)', borderColor: 'hsl(220,18%,18%)' }}>
+      <div
+        className="flex items-center gap-1 rounded-xl p-1 border"
+        style={{ backgroundColor: 'hsl(222,22%,11%)', borderColor: 'hsl(220,18%,18%)' }}
+      >
         {WARDS.map((w) => {
           const active = wardFilter === w.id;
           return (
@@ -85,15 +94,20 @@ export default function Topbar() {
       </div>
 
       {/* System status */}
-      <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border"
-        style={{ backgroundColor: 'rgba(16,185,129,0.08)', borderColor: 'rgba(16,185,129,0.2)' }}>
+      <div
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border"
+        style={{ backgroundColor: 'rgba(16,185,129,0.08)', borderColor: 'rgba(16,185,129,0.2)' }}
+      >
         <Activity className="w-3.5 h-3.5 text-emerald-500" />
         <span className="text-xs text-emerald-500 font-medium">All Systems Nominal</span>
       </div>
 
       {/* Alerts bell */}
-      <Link href="/alert-management-panel" id="topbar-alerts-bell"
-        className="relative p-2 rounded-xl hover:bg-white/5 transition-colors">
+      <Link
+        href="/alert-management-panel"
+        id="topbar-alerts-bell"
+        className="relative p-2 rounded-xl hover:bg-white/5 transition-colors"
+      >
         <Bell className="w-4 h-4 text-gray-400" />
         <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
       </Link>
@@ -109,8 +123,13 @@ export default function Topbar() {
             <p className="text-[10px] text-blue-400 font-medium">{user.role}</p>
           </div>
         </div>
-        <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-          style={{ backgroundColor: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.25)' }}>
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+          style={{
+            backgroundColor: 'rgba(59,130,246,0.12)',
+            border: '1px solid rgba(59,130,246,0.25)',
+          }}
+        >
           <span className="text-xs font-bold text-blue-400">{getInitials(user.name)}</span>
         </div>
       </div>

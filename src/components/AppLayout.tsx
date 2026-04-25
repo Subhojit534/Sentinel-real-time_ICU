@@ -12,9 +12,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       <Sidebar />
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <Topbar />
-        <main className="flex-1 overflow-hidden flex flex-col">
-          {children}
-        </main>
+        <main className="flex-1 overflow-hidden flex flex-col">{children}</main>
       </div>
     </div>
   );

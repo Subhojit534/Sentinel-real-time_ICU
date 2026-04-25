@@ -10,8 +10,8 @@ export async function GET(request: Request) {
 
     if (!supabase) {
       let filtered = MOCK_ALERTS;
-      if (wardId && wardId !== 'all') filtered = filtered.filter(a => a.wardId === wardId);
-      if (status && status !== 'all') filtered = filtered.filter(a => a.status === status);
+      if (wardId && wardId !== 'all') filtered = filtered.filter((a) => a.wardId === wardId);
+      if (status && status !== 'all') filtered = filtered.filter((a) => a.status === status);
       return NextResponse.json({ alerts: filtered });
     }
 
@@ -28,10 +28,10 @@ export async function GET(request: Request) {
     // If no rows in DB, gracefully return mock data (no throw — avoids noisy 500)
     if (!data || data.length === 0) {
       let filtered = MOCK_ALERTS;
-      if (wardId && wardId !== 'all') filtered = filtered.filter(a => a.wardId === wardId);
+      if (wardId && wardId !== 'all') filtered = filtered.filter((a) => a.wardId === wardId);
       if (status && status !== 'all') {
         const statuses = status.split(',');
-        filtered = filtered.filter(a => statuses.includes(a.status));
+        filtered = filtered.filter((a) => statuses.includes(a.status));
       }
       return NextResponse.json({ alerts: filtered });
     }
@@ -66,12 +66,12 @@ export async function GET(request: Request) {
     const status = searchParams.get('status');
     const severity = searchParams.get('severity');
     let filtered = MOCK_ALERTS;
-    if (wardId && wardId !== 'all') filtered = filtered.filter(a => a.wardId === wardId);
+    if (wardId && wardId !== 'all') filtered = filtered.filter((a) => a.wardId === wardId);
     if (status && status !== 'all') {
       const statuses = status.split(',');
-      filtered = filtered.filter(a => statuses.includes(a.status));
+      filtered = filtered.filter((a) => statuses.includes(a.status));
     }
-    if (severity && severity !== 'all') filtered = filtered.filter(a => a.severity === severity);
+    if (severity && severity !== 'all') filtered = filtered.filter((a) => a.severity === severity);
     return NextResponse.json({ alerts: filtered });
   }
 }

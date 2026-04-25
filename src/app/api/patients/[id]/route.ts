@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!id) {
     return NextResponse.json({ error: 'Patient id is required' }, { status: 400 });
@@ -16,7 +13,11 @@ export async function DELETE(
     }
 
     // Get bed id before deleting
-    const { data: patient } = await supabase.from('patients').select('bed_id').eq('id', id).single();
+    const { data: patient } = await supabase
+      .from('patients')
+      .select('bed_id')
+      .eq('id', id)
+      .single();
 
     // Delete related vitals first (FK constraint)
     await supabase.from('vitals_history').delete().eq('patient_id', id);
@@ -29,7 +30,10 @@ export async function DELETE(
 
     // Free the bed
     if (patient?.bed_id) {
-      await supabase.from('beds').update({ status: 'available', patient_id: null }).eq('id', patient.bed_id);
+      await supabase
+        .from('beds')
+        .update({ status: 'available', patient_id: null })
+        .eq('id', patient.bed_id);
     }
 
     return NextResponse.json({ success: true, freedBedId: patient?.bed_id });

@@ -12,10 +12,10 @@ export async function GET(request: Request) {
       console.warn('Supabase not configured, returning mock patients');
       let filtered = MOCK_PATIENTS;
       if (wardId && wardId !== 'all') {
-        filtered = filtered.filter(p => p.wardId === wardId);
+        filtered = filtered.filter((p) => p.wardId === wardId);
       }
       if (status && status !== 'all') {
-        filtered = filtered.filter(p => p.status === status);
+        filtered = filtered.filter((p) => p.status === status);
       }
       return NextResponse.json({ patients: filtered });
     }
@@ -39,29 +39,32 @@ export async function GET(request: Request) {
     if (!data || data.length === 0) {
       // Supabase has no patient rows yet — silently return mock data
       let filtered = MOCK_PATIENTS;
-      if (wardId && wardId !== 'all') filtered = filtered.filter(p => p.wardId === wardId);
-      if (status && status !== 'all') filtered = filtered.filter(p => p.status === status);
+      if (wardId && wardId !== 'all') filtered = filtered.filter((p) => p.wardId === wardId);
+      if (status && status !== 'all') filtered = filtered.filter((p) => p.status === status);
       return NextResponse.json({ patients: filtered });
     }
 
     const patients = data.map((row: any) => {
       // vitals_current comes back as an object (one-to-one) or null
-      const vc = Array.isArray(row.vitals_current)
-        ? row.vitals_current[0]
-        : row.vitals_current;
+      const vc = Array.isArray(row.vitals_current) ? row.vitals_current[0] : row.vitals_current;
 
       // Generate a 24-point trend from current vitals for chart rendering
       const now = Date.now();
-      const trend = vc ? Array.from({ length: 24 }, (_, i) => ({
-        time: new Date(now - (23 - i) * 3600000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-        hr:   Math.round(vc.hr   + (Math.random() - 0.5) * 14),
-        spo2: Math.min(100, Math.max(85, Math.round(vc.spo2 + (Math.random() - 0.5) * 4))),
-        sbp:  Math.round(vc.sbp  + (Math.random() - 0.5) * 18),
-        dbp:  Math.round(vc.dbp  + (Math.random() - 0.5) * 10),
-        temp: parseFloat((vc.temp + (Math.random() - 0.4) * 0.8).toFixed(1)),
-        rr:   Math.round(vc.rr   + (Math.random() - 0.5) * 6),
-        map:  Math.round(vc.map  + (Math.random() - 0.5) * 10),
-      })) : [];
+      const trend = vc
+        ? Array.from({ length: 24 }, (_, i) => ({
+            time: new Date(now - (23 - i) * 3600000).toLocaleTimeString('en-GB', {
+              hour: '2-digit',
+              minute: '2-digit',
+            }),
+            hr: Math.round(vc.hr + (Math.random() - 0.5) * 14),
+            spo2: Math.min(100, Math.max(85, Math.round(vc.spo2 + (Math.random() - 0.5) * 4))),
+            sbp: Math.round(vc.sbp + (Math.random() - 0.5) * 18),
+            dbp: Math.round(vc.dbp + (Math.random() - 0.5) * 10),
+            temp: parseFloat((vc.temp + (Math.random() - 0.4) * 0.8).toFixed(1)),
+            rr: Math.round(vc.rr + (Math.random() - 0.5) * 6),
+            map: Math.round(vc.map + (Math.random() - 0.5) * 10),
+          }))
+        : [];
 
       return {
         id: row.id,
@@ -91,8 +94,8 @@ export async function GET(request: Request) {
     const wardId = searchParams.get('wardId');
     const status = searchParams.get('status');
     let filtered = MOCK_PATIENTS;
-    if (wardId && wardId !== 'all') filtered = filtered.filter(p => p.wardId === wardId);
-    if (status && status !== 'all') filtered = filtered.filter(p => p.status === status);
+    if (wardId && wardId !== 'all') filtered = filtered.filter((p) => p.wardId === wardId);
+    if (status && status !== 'all') filtered = filtered.filter((p) => p.status === status);
     return NextResponse.json({ patients: filtered });
   }
 }
@@ -100,10 +103,23 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, age, gender, bedId, wardId, diagnosis, status, attendingPhysician, primaryNurse } = body;
+    const {
+      name,
+      age,
+      gender,
+      bedId,
+      wardId,
+      diagnosis,
+      status,
+      attendingPhysician,
+      primaryNurse,
+    } = body;
 
     if (!supabase) {
-      return NextResponse.json({ success: true, patientId: `pat-${crypto.randomUUID().slice(0, 8)}` });
+      return NextResponse.json({
+        success: true,
+        patientId: `pat-${crypto.randomUUID().slice(0, 8)}`,
+      });
     }
 
     const patientId = `pt-${crypto.randomUUID().slice(0, 8)}`;
@@ -129,11 +145,20 @@ export async function POST(request: Request) {
     // Insert default vitals
     await supabase.from('vitals_current').insert({
       patient_id: patientId,
-      hr: 80, spo2: 97, sbp: 120, dbp: 78, temp: 36.8, rr: 16, map: 92,
+      hr: 80,
+      spo2: 97,
+      sbp: 120,
+      dbp: 78,
+      temp: 36.8,
+      rr: 16,
+      map: 92,
     });
 
     // Mark bed as occupied
-    await supabase.from('beds').update({ status: 'occupied', patient_id: patientId }).eq('id', bedId);
+    await supabase
+      .from('beds')
+      .update({ status: 'occupied', patient_id: patientId })
+      .eq('id', bedId);
 
     return NextResponse.json({ success: true, patientId });
   } catch (error: any) {

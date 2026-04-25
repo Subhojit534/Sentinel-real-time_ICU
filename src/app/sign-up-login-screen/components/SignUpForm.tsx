@@ -48,12 +48,18 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
   // Load hospitals and wards from Supabase
   useEffect(() => {
     if (!supabase) return;
-    supabase.from('hospitals').select('id, name').then(({ data }) => {
-      if (data && data.length > 0) setHospitals(data);
-    });
-    supabase.from('wards').select('id, name').then(({ data }) => {
-      if (data && data.length > 0) setWards(data);
-    });
+    supabase
+      .from('hospitals')
+      .select('id, name')
+      .then(({ data }) => {
+        if (data && data.length > 0) setHospitals(data);
+      });
+    supabase
+      .from('wards')
+      .select('id, name')
+      .then(({ data }) => {
+        if (data && data.length > 0) setWards(data);
+      });
   }, []);
 
   const {
@@ -68,7 +74,7 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
 
   const onSubmit = async (data: SignUpFormData) => {
     setIsLoading(true);
-    
+
     if (supabase) {
       const id = `usr-${crypto.randomUUID().slice(0, 8)}`;
       // Map roles to what the schema expects
@@ -95,7 +101,7 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
     } else {
       await new Promise((r) => setTimeout(r, 1400));
     }
-    
+
     toast.success('Account created successfully! You can now sign in.');
     setIsLoading(false);
     setTimeout(() => onSwitchToLogin(), 1500);
@@ -106,7 +112,8 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-foreground tracking-tight">Request ICU Access</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Complete your clinician profile. Access is granted after verification by your ICU administrator.
+          Complete your clinician profile. Access is granted after verification by your ICU
+          administrator.
         </p>
       </div>
 
@@ -114,7 +121,12 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
         {/* Name row */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="firstName" className="block text-xs font-semibold text-foreground mb-1.5">First Name</label>
+            <label
+              htmlFor="firstName"
+              className="block text-xs font-semibold text-foreground mb-1.5"
+            >
+              First Name
+            </label>
             <input
               id="firstName"
               type="text"
@@ -122,10 +134,17 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
               {...register('firstName', { required: 'Required' })}
               className={`w-full bg-white/5 border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-cyan-500/50 transition-all ${errors.firstName ? 'border-red-500/50' : 'border-border'}`}
             />
-            {errors.firstName && <p className="text-xs text-red-400 mt-1">{errors.firstName.message}</p>}
+            {errors.firstName && (
+              <p className="text-xs text-red-400 mt-1">{errors.firstName.message}</p>
+            )}
           </div>
           <div>
-            <label htmlFor="lastName" className="block text-xs font-semibold text-foreground mb-1.5">Last Name</label>
+            <label
+              htmlFor="lastName"
+              className="block text-xs font-semibold text-foreground mb-1.5"
+            >
+              Last Name
+            </label>
             <input
               id="lastName"
               type="text"
@@ -133,23 +152,33 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
               {...register('lastName', { required: 'Required' })}
               className={`w-full bg-white/5 border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-cyan-500/50 transition-all ${errors.lastName ? 'border-red-500/50' : 'border-border'}`}
             />
-            {errors.lastName && <p className="text-xs text-red-400 mt-1">{errors.lastName.message}</p>}
+            {errors.lastName && (
+              <p className="text-xs text-red-400 mt-1">{errors.lastName.message}</p>
+            )}
           </div>
         </div>
 
         {/* Email */}
         <div>
-          <label htmlFor="signup-email" className="block text-xs font-semibold text-foreground mb-1.5">
+          <label
+            htmlFor="signup-email"
+            className="block text-xs font-semibold text-foreground mb-1.5"
+          >
             Institutional Email
           </label>
-          <p className="text-[11px] text-muted-foreground mb-1.5">Use your hospital-issued email address for verification</p>
+          <p className="text-[11px] text-muted-foreground mb-1.5">
+            Use your hospital-issued email address for verification
+          </p>
           <input
             id="signup-email"
             type="email"
             placeholder="yourname@hospital.org"
             {...register('email', {
               required: 'Email is required',
-              pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Enter a valid email address' },
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: 'Enter a valid email address',
+              },
             })}
             className={`w-full bg-white/5 border rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-cyan-500/50 transition-all ${errors.email ? 'border-red-500/50' : 'border-border'}`}
           />
@@ -158,7 +187,9 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
 
         {/* Role */}
         <div>
-          <label htmlFor="role" className="block text-xs font-semibold text-foreground mb-1.5">Clinical Role</label>
+          <label htmlFor="role" className="block text-xs font-semibold text-foreground mb-1.5">
+            Clinical Role
+          </label>
           <div className="relative">
             <select
               id="role"
@@ -166,12 +197,27 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
               style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}
               className={`w-full appearance-none border rounded-lg px-4 py-2.5 text-sm outline-none focus:border-cyan-500/50 transition-all cursor-pointer pr-8 ${errors.role ? 'border-red-500/50' : 'border-border'}`}
             >
-              <option value="" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>Select role...</option>
-              <option value="doctor" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>Attending Physician</option>
-              <option value="registrar" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>Senior Registrar</option>
-              <option value="nurse" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>ICU Nurse</option>
-              <option value="nurse_charge" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>Charge Nurse</option>
-              <option value="admin" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>ICU Administrator</option>
+              <option value="" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>
+                Select role...
+              </option>
+              <option value="doctor" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>
+                Attending Physician
+              </option>
+              <option value="registrar" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>
+                Senior Registrar
+              </option>
+              <option value="nurse" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>
+                ICU Nurse
+              </option>
+              <option
+                value="nurse_charge"
+                style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}
+              >
+                Charge Nurse
+              </option>
+              <option value="admin" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>
+                ICU Administrator
+              </option>
             </select>
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
           </div>
@@ -181,25 +227,39 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
         {/* License number — only for clinical roles */}
         {role && role !== 'admin' && (
           <div>
-            <label htmlFor="licenseNumber" className="block text-xs font-semibold text-foreground mb-1.5">
+            <label
+              htmlFor="licenseNumber"
+              className="block text-xs font-semibold text-foreground mb-1.5"
+            >
               Medical Registration / License Number
             </label>
-            <p className="text-[11px] text-muted-foreground mb-1.5">Required for clinical role verification</p>
+            <p className="text-[11px] text-muted-foreground mb-1.5">
+              Required for clinical role verification
+            </p>
             <input
               id="licenseNumber"
               type="text"
               placeholder="e.g. MCI-2019-12345"
-              {...register('licenseNumber', { required: role !== 'admin' ? 'License number required for clinical roles' : false })}
+              {...register('licenseNumber', {
+                required: role !== 'admin' ? 'License number required for clinical roles' : false,
+              })}
               className={`w-full bg-white/5 border rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-cyan-500/50 transition-all font-mono ${errors.licenseNumber ? 'border-red-500/50' : 'border-border'}`}
             />
-            {errors.licenseNumber && <p className="text-xs text-red-400 mt-1">{errors.licenseNumber.message}</p>}
+            {errors.licenseNumber && (
+              <p className="text-xs text-red-400 mt-1">{errors.licenseNumber.message}</p>
+            )}
           </div>
         )}
 
         {/* Hospital + Ward */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="hospital" className="block text-xs font-semibold text-foreground mb-1.5">Hospital</label>
+            <label
+              htmlFor="hospital"
+              className="block text-xs font-semibold text-foreground mb-1.5"
+            >
+              Hospital
+            </label>
             <div className="relative">
               <select
                 id="hospital"
@@ -207,17 +267,29 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
                 style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}
                 className={`w-full appearance-none border rounded-lg px-3 py-2.5 text-sm outline-none focus:border-cyan-500/50 transition-all cursor-pointer pr-7 ${errors.hospital ? 'border-red-500/50' : 'border-border'}`}
               >
-                <option value="" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>Select...</option>
-                {hospitals.map(h => (
-                  <option key={h.id} value={h.id} style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>{h.name}</option>
+                <option value="" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>
+                  Select...
+                </option>
+                {hospitals.map((h) => (
+                  <option
+                    key={h.id}
+                    value={h.id}
+                    style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}
+                  >
+                    {h.name}
+                  </option>
                 ))}
               </select>
               <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
             </div>
-            {errors.hospital && <p className="text-xs text-red-400 mt-1">{errors.hospital.message}</p>}
+            {errors.hospital && (
+              <p className="text-xs text-red-400 mt-1">{errors.hospital.message}</p>
+            )}
           </div>
           <div>
-            <label htmlFor="ward" className="block text-xs font-semibold text-foreground mb-1.5">Primary Ward</label>
+            <label htmlFor="ward" className="block text-xs font-semibold text-foreground mb-1.5">
+              Primary Ward
+            </label>
             <div className="relative">
               <select
                 id="ward"
@@ -225,9 +297,17 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
                 style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}
                 className={`w-full appearance-none border rounded-lg px-3 py-2.5 text-sm outline-none focus:border-cyan-500/50 transition-all cursor-pointer pr-7 ${errors.ward ? 'border-red-500/50' : 'border-border'}`}
               >
-                <option value="" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>Select...</option>
-                {wards.map(w => (
-                  <option key={w.id} value={w.id} style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>{w.name}</option>
+                <option value="" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>
+                  Select...
+                </option>
+                {wards.map((w) => (
+                  <option
+                    key={w.id}
+                    value={w.id}
+                    style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}
+                  >
+                    {w.name}
+                  </option>
                 ))}
               </select>
               <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
@@ -238,8 +318,15 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
 
         {/* Password */}
         <div>
-          <label htmlFor="signup-password" className="block text-xs font-semibold text-foreground mb-1.5">Password</label>
-          <p className="text-[11px] text-muted-foreground mb-1.5">Minimum 8 characters, at least one uppercase and one number</p>
+          <label
+            htmlFor="signup-password"
+            className="block text-xs font-semibold text-foreground mb-1.5"
+          >
+            Password
+          </label>
+          <p className="text-[11px] text-muted-foreground mb-1.5">
+            Minimum 8 characters, at least one uppercase and one number
+          </p>
           <div className="relative">
             <input
               id="signup-password"
@@ -248,20 +335,34 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
               {...register('password', {
                 required: 'Password is required',
                 minLength: { value: 8, message: 'At least 8 characters required' },
-                pattern: { value: /^(?=.*[A-Z])(?=.*\d)/, message: 'Must include uppercase letter and number' },
+                pattern: {
+                  value: /^(?=.*[A-Z])(?=.*\d)/,
+                  message: 'Must include uppercase letter and number',
+                },
               })}
               className={`w-full bg-white/5 border rounded-lg px-4 py-2.5 pr-10 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-cyan-500/50 transition-all ${errors.password ? 'border-red-500/50' : 'border-border'}`}
             />
-            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
-          {errors.password && <p className="text-xs text-red-400 mt-1">{errors.password.message}</p>}
+          {errors.password && (
+            <p className="text-xs text-red-400 mt-1">{errors.password.message}</p>
+          )}
         </div>
 
         {/* Confirm password */}
         <div>
-          <label htmlFor="confirmPassword" className="block text-xs font-semibold text-foreground mb-1.5">Confirm Password</label>
+          <label
+            htmlFor="confirmPassword"
+            className="block text-xs font-semibold text-foreground mb-1.5"
+          >
+            Confirm Password
+          </label>
           <div className="relative">
             <input
               id="confirmPassword"
@@ -273,11 +374,17 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
               })}
               className={`w-full bg-white/5 border rounded-lg px-4 py-2.5 pr-10 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-cyan-500/50 transition-all ${errors.confirmPassword ? 'border-red-500/50' : 'border-border'}`}
             />
-            <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+            <button
+              type="button"
+              onClick={() => setShowConfirm(!showConfirm)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            >
               {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
-          {errors.confirmPassword && <p className="text-xs text-red-400 mt-1">{errors.confirmPassword.message}</p>}
+          {errors.confirmPassword && (
+            <p className="text-xs text-red-400 mt-1">{errors.confirmPassword.message}</p>
+          )}
         </div>
 
         {/* Terms */}
@@ -288,12 +395,19 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
             {...register('agreeTerms', { required: 'You must agree to the terms to continue' })}
             className="accent-cyan-500 w-3.5 h-3.5 mt-0.5 cursor-pointer flex-shrink-0"
           />
-          <label htmlFor="agreeTerms" className="text-xs text-muted-foreground cursor-pointer select-none leading-relaxed">
+          <label
+            htmlFor="agreeTerms"
+            className="text-xs text-muted-foreground cursor-pointer select-none leading-relaxed"
+          >
             I agree to the{' '}
-            <span className="text-cyan-400 hover:text-cyan-300 cursor-pointer">Clinical Data Terms of Use</span>
-            {' '}and{' '}
-            <span className="text-cyan-400 hover:text-cyan-300 cursor-pointer">HIPAA Privacy Policy</span>.
-            I confirm this account will be used solely for clinical monitoring purposes.
+            <span className="text-cyan-400 hover:text-cyan-300 cursor-pointer">
+              Clinical Data Terms of Use
+            </span>{' '}
+            and{' '}
+            <span className="text-cyan-400 hover:text-cyan-300 cursor-pointer">
+              HIPAA Privacy Policy
+            </span>
+            . I confirm this account will be used solely for clinical monitoring purposes.
           </label>
         </div>
         {errors.agreeTerms && <p className="text-xs text-red-400">{errors.agreeTerms.message}</p>}
@@ -322,7 +436,10 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
       <div className="mt-5 text-center">
         <p className="text-xs text-muted-foreground">
           Already have access?{' '}
-          <button onClick={onSwitchToLogin} className="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">
+          <button
+            onClick={onSwitchToLogin}
+            className="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors"
+          >
             Sign in
           </button>
         </p>

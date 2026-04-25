@@ -1,58 +1,66 @@
 /* src/styles/landing.css */
 .landing-body {
-    background-color: #030308;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    overflow-x: hidden;
+  background-color: #030308;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  overflow-x: hidden;
 }
 
 #canvas-container {
-    width: 100%;
-    height: 100%;
-    min-height: 450px;
-    cursor: grab;
-    touch-action: none; 
+  width: 100%;
+  height: 100%;
+  min-height: 450px;
+  cursor: grab;
+  touch-action: none;
 }
 #canvas-container:active {
-    cursor: grabbing;
+  cursor: grabbing;
 }
 
 /* Beautiful glowing background radial gradients */
 .glow-bg {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 80vw;
-    height: 80vw;
-    background: radial-gradient(circle at 20% 30%, rgba(37, 99, 235, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 80% 70%, rgba(219, 39, 119, 0.08) 0%, transparent 40%);
-    z-index: 0;
-    pointer-events: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80vw;
+  height: 80vw;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(37, 99, 235, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(219, 39, 119, 0.08) 0%, transparent 40%);
+  z-index: 0;
+  pointer-events: none;
 }
 
 /* Premium Glassmorphism card */
 .glass-card {
-    background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255,255,255,0.02);
-    border-radius: 24px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  border-radius: 24px;
 }
 
 /* Gradient text */
 .text-gradient {
-    background: linear-gradient(90deg, #a5b4fc 0%, #22d3ee 50%, #f472b6 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  background: linear-gradient(90deg, #a5b4fc 0%, #22d3ee 50%, #f472b6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* Primary glow button */
 .btn-glow {
-    box-shadow: 0 0 20px rgba(79, 70, 229, 0.4), inset 0 0 10px rgba(255,255,255,0.1);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+  box-shadow:
+    0 0 20px rgba(79, 70, 229, 0.4),
+    inset 0 0 10px rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
 }
 .btn-glow:hover {
-    box-shadow: 0 0 35px rgba(79, 70, 229, 0.6), inset 0 0 15px rgba(255,255,255,0.2);
-    transform: translateY(-2px);
+  box-shadow:
+    0 0 35px rgba(79, 70, 229, 0.6),
+    inset 0 0 15px rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
 }

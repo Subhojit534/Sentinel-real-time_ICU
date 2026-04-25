@@ -10,7 +10,13 @@ export default function LiveIndicator({ className = '' }: LiveIndicatorProps) {
 
   useEffect(() => {
     const update = () => {
-      setTime(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      setTime(
+        new Date().toLocaleTimeString('en-GB', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        })
+      );
     };
     update();
     const interval = setInterval(update, 1000);

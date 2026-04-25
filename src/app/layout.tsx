@@ -17,15 +17,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="dark">
       <body className="bg-background text-foreground antialiased">
-        <AppProviders>
-          {children}
-        </AppProviders>
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );

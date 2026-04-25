@@ -22,9 +22,24 @@ interface DemoCredential {
 }
 
 const DEMO_CREDENTIALS: DemoCredential[] = [
-  { role: 'Doctor', email: 'priya.sharma@sentinel.icu', password: 'Sentinel@ICU2026', badge: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/25' },
-  { role: 'Nurse', email: 'kavita.rao@sentinel.icu', password: 'Sentinel@ICU2026', badge: 'bg-green-500/15 text-green-400 border-green-500/25' },
-  { role: 'Admin', email: 'admin@sentinel.icu', password: 'Sentinel@ICU2026', badge: 'bg-purple-500/15 text-purple-400 border-purple-500/25' },
+  {
+    role: 'Doctor',
+    email: 'priya.sharma@sentinel.icu',
+    password: 'Sentinel@ICU2026',
+    badge: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/25',
+  },
+  {
+    role: 'Nurse',
+    email: 'kavita.rao@sentinel.icu',
+    password: 'Sentinel@ICU2026',
+    badge: 'bg-green-500/15 text-green-400 border-green-500/25',
+  },
+  {
+    role: 'Admin',
+    email: 'admin@sentinel.icu',
+    password: 'Sentinel@ICU2026',
+    badge: 'bg-purple-500/15 text-purple-400 border-purple-500/25',
+  },
 ];
 
 // Backend: replace with JWT auth endpoint POST /api/auth/login
@@ -52,7 +67,7 @@ export default function LoginForm({ onSwitchToSignup }: Props) {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-    
+
     let isValid = false;
     let sessionUser = null;
 
@@ -64,7 +79,7 @@ export default function LoginForm({ onSwitchToSignup }: Props) {
         .eq('email', data.email)
         .eq('password', data.password)
         .single();
-        
+
       if (!error && user) {
         isValid = true;
         sessionUser = {
@@ -86,12 +101,26 @@ export default function LoginForm({ onSwitchToSignup }: Props) {
         isValid = true;
         // Map demo email to a sensible name
         const demoNames: Record<string, { name: string; role: string; wardId: string }> = {
-          'priya.sharma@sentinel.icu':  { name: 'Dr. Priya Sharma', role: 'doctor', wardId: 'ward-icu-a' },
-          'kavita.rao@sentinel.icu':    { name: 'Nurse Kavita Rao', role: 'nurse',  wardId: 'ward-icu-a' },
-          'admin@sentinel.icu':         { name: 'Admin Sys',        role: 'admin',  wardId: 'ward-icu-a' },
+          'priya.sharma@sentinel.icu': {
+            name: 'Dr. Priya Sharma',
+            role: 'doctor',
+            wardId: 'ward-icu-a',
+          },
+          'kavita.rao@sentinel.icu': {
+            name: 'Nurse Kavita Rao',
+            role: 'nurse',
+            wardId: 'ward-icu-a',
+          },
+          'admin@sentinel.icu': { name: 'Admin Sys', role: 'admin', wardId: 'ward-icu-a' },
         };
         const mapped = demoNames[data.email];
-        if (mapped) sessionUser = { name: mapped.name, email: data.email, role: mapped.role, wardId: mapped.wardId };
+        if (mapped)
+          sessionUser = {
+            name: mapped.name,
+            email: data.email,
+            role: mapped.role,
+            wardId: mapped.wardId,
+          };
       }
     }
 
@@ -128,7 +157,9 @@ export default function LoginForm({ onSwitchToSignup }: Props) {
 
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-foreground tracking-tight">Welcome back</h2>
-        <p className="text-sm text-muted-foreground mt-1">Sign in to access your ICU monitoring dashboard</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          Sign in to access your ICU monitoring dashboard
+        </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
@@ -142,7 +173,10 @@ export default function LoginForm({ onSwitchToSignup }: Props) {
 
         {/* Email */}
         <div>
-          <label htmlFor="login-email" className="block text-xs font-semibold text-foreground mb-1.5">
+          <label
+            htmlFor="login-email"
+            className="block text-xs font-semibold text-foreground mb-1.5"
+          >
             Institutional Email
           </label>
           <input
@@ -152,7 +186,10 @@ export default function LoginForm({ onSwitchToSignup }: Props) {
             placeholder="yourname@hospital.icu"
             {...register('email', {
               required: 'Email is required',
-              pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Enter a valid email address' },
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: 'Enter a valid email address',
+              },
             })}
             className={`w-full bg-white/5 border rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all duration-150 focus:bg-white/8
               ${errors.email ? 'border-red-500/50 focus:border-red-500' : 'border-border focus:border-cyan-500/50'}`}
@@ -166,7 +203,10 @@ export default function LoginForm({ onSwitchToSignup }: Props) {
             <label htmlFor="login-password" className="block text-xs font-semibold text-foreground">
               Password
             </label>
-            <button type="button" className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors">
+            <button
+              type="button"
+              className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors"
+            >
               Forgot password?
             </button>
           </div>
@@ -191,7 +231,9 @@ export default function LoginForm({ onSwitchToSignup }: Props) {
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
-          {errors.password && <p className="text-xs text-red-400 mt-1">{errors.password.message}</p>}
+          {errors.password && (
+            <p className="text-xs text-red-400 mt-1">{errors.password.message}</p>
+          )}
         </div>
 
         {/* Remember me */}
@@ -202,7 +244,10 @@ export default function LoginForm({ onSwitchToSignup }: Props) {
             {...register('remember')}
             className="accent-cyan-500 w-3.5 h-3.5 cursor-pointer"
           />
-          <label htmlFor="remember" className="text-xs text-muted-foreground cursor-pointer select-none">
+          <label
+            htmlFor="remember"
+            className="text-xs text-muted-foreground cursor-pointer select-none"
+          >
             Keep me signed in on this device
           </label>
         </div>
@@ -231,7 +276,10 @@ export default function LoginForm({ onSwitchToSignup }: Props) {
       <div className="mt-5 text-center">
         <p className="text-xs text-muted-foreground">
           New to ProjectSentinel?{' '}
-          <button onClick={onSwitchToSignup} className="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">
+          <button
+            onClick={onSwitchToSignup}
+            className="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors"
+          >
             Request access
           </button>
         </p>
@@ -240,8 +288,12 @@ export default function LoginForm({ onSwitchToSignup }: Props) {
       {/* Demo credentials */}
       <div className="mt-8 border border-border/60 rounded-xl overflow-hidden">
         <div className="px-4 py-2.5 bg-white/3 border-b border-border/60 flex items-center justify-between">
-          <p className="text-xs font-semibold text-muted-foreground">Demo Accounts — Click to autofill</p>
-          <span className="text-[10px] text-muted-foreground bg-white/5 px-2 py-0.5 rounded border border-border">sandbox</span>
+          <p className="text-xs font-semibold text-muted-foreground">
+            Demo Accounts — Click to autofill
+          </p>
+          <span className="text-[10px] text-muted-foreground bg-white/5 px-2 py-0.5 rounded border border-border">
+            sandbox
+          </span>
         </div>
         <div className="divide-y divide-border/40">
           {DEMO_CREDENTIALS.map((cred) => (
@@ -250,21 +302,32 @@ export default function LoginForm({ onSwitchToSignup }: Props) {
               className="flex items-center gap-3 px-4 py-3 hover:bg-white/3 transition-colors cursor-pointer group"
               onClick={() => autofill(cred)}
             >
-              <span className={`text-[11px] font-bold px-2 py-0.5 rounded border ${cred.badge} flex-shrink-0 w-14 text-center`}>
+              <span
+                className={`text-[11px] font-bold px-2 py-0.5 rounded border ${cred.badge} flex-shrink-0 w-14 text-center`}
+              >
                 {cred.role}
               </span>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-mono text-foreground truncate">{cred.email}</p>
-                <p className="text-[10px] text-muted-foreground font-mono mt-0.5">{cred.password.replace(/./g, '•').slice(0, 12)}••</p>
+                <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
+                  {cred.password.replace(/./g, '•').slice(0, 12)}••
+                </p>
               </div>
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
                   type="button"
-                  onClick={(e) => { e.stopPropagation(); copyToClipboard(cred.email, `${cred.role}-email`); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    copyToClipboard(cred.email, `${cred.role}-email`);
+                  }}
                   title="Copy email"
                   className="p-1 rounded hover:bg-white/10 text-muted-foreground hover:text-foreground transition-all"
                 >
-                  {copiedField === `${cred.role}-email` ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+                  {copiedField === `${cred.role}-email` ? (
+                    <Check className="w-3 h-3 text-green-400" />
+                  ) : (
+                    <Copy className="w-3 h-3" />
+                  )}
                 </button>
                 <span className="text-[10px] text-cyan-400 font-medium">Use</span>
               </div>

@@ -2,9 +2,15 @@
 import React, { useMemo } from 'react';
 import { useSimulation } from '@/providers/SimulationProvider';
 import {
-  AlertTriangle, HeartPulse, Droplets,
-  BedDouble, Activity, Brain,
-  TrendingUp, TrendingDown, Minus,
+  AlertTriangle,
+  HeartPulse,
+  Droplets,
+  BedDouble,
+  Activity,
+  Brain,
+  TrendingUp,
+  TrendingDown,
+  Minus,
 } from 'lucide-react';
 
 export default function KPIBentoGrid() {
@@ -13,17 +19,17 @@ export default function KPIBentoGrid() {
   const data = useMemo(() => {
     if (!patients.length) return null;
 
-    const criticalPatients = patients.filter(p => p.status === 'critical').length;
-    const activeAlerts = alerts.filter(a => a.status === 'active' || a.status === 'escalated');
-    const unacknowledgedAlerts = alerts.filter(a => a.status === 'active').length;
-    
+    const criticalPatients = patients.filter((p) => p.status === 'critical').length;
+    const activeAlerts = alerts.filter((a) => a.status === 'active' || a.status === 'escalated');
+    const unacknowledgedAlerts = alerts.filter((a) => a.status === 'active').length;
+
     let totalSpo2 = 0;
     let totalMap = 0;
     let lowSpo2Count = 0;
     let hypotensiveCount = 0;
     let highAiRiskCount = 0;
 
-    patients.forEach(p => {
+    patients.forEach((p) => {
       if (p.vitals) {
         totalSpo2 += p.vitals.spo2;
         totalMap += p.vitals.map;
@@ -50,7 +56,7 @@ export default function KPIBentoGrid() {
       totalBeds,
       avgMap,
       hypotensiveCount,
-      highAiRiskCount
+      highAiRiskCount,
     };
   }, [patients, alerts]);
 
@@ -65,9 +71,14 @@ export default function KPIBentoGrid() {
       value: data.criticalPatients.toString(),
       sub: 'Require immediate intervention',
       icon: AlertTriangle,
-      trend: 'Live', trendDir: 'flat', trendBad: true,
-      leftBorder: '4px solid #EF4444', valueCls: 'text-red-400',
-      iconBg: 'rgba(239,68,68,0.10)', iconColor: '#EF4444', cardBg: 'rgba(239,68,68,0.05)',
+      trend: 'Live',
+      trendDir: 'flat',
+      trendBad: true,
+      leftBorder: '4px solid #EF4444',
+      valueCls: 'text-red-400',
+      iconBg: 'rgba(239,68,68,0.10)',
+      iconColor: '#EF4444',
+      cardBg: 'rgba(239,68,68,0.05)',
     },
     {
       id: 'kpi-alerts',
@@ -75,9 +86,14 @@ export default function KPIBentoGrid() {
       value: data.activeAlerts.toString(),
       sub: `${data.unacknowledgedAlerts} unacknowledged`,
       icon: HeartPulse,
-      trend: 'Live', trendDir: 'flat', trendBad: true,
-      leftBorder: '4px solid #F97316', valueCls: 'text-orange-400',
-      iconBg: 'rgba(249,115,22,0.10)', iconColor: '#F97316', cardBg: 'rgba(249,115,22,0.05)',
+      trend: 'Live',
+      trendDir: 'flat',
+      trendBad: true,
+      leftBorder: '4px solid #F97316',
+      valueCls: 'text-orange-400',
+      iconBg: 'rgba(249,115,22,0.10)',
+      iconColor: '#F97316',
+      cardBg: 'rgba(249,115,22,0.05)',
     },
     {
       id: 'kpi-spo2',
@@ -85,9 +101,14 @@ export default function KPIBentoGrid() {
       value: `${data.avgSpo2}%`,
       sub: `${data.lowSpo2Count} patients below threshold`,
       icon: Droplets,
-      trend: 'Live', trendDir: 'flat', trendBad: data.lowSpo2Count > 0,
-      leftBorder: '4px solid transparent', valueCls: 'text-white',
-      iconBg: 'rgba(59,130,246,0.10)', iconColor: '#60A5FA', cardBg: 'transparent',
+      trend: 'Live',
+      trendDir: 'flat',
+      trendBad: data.lowSpo2Count > 0,
+      leftBorder: '4px solid transparent',
+      valueCls: 'text-white',
+      iconBg: 'rgba(59,130,246,0.10)',
+      iconColor: '#60A5FA',
+      cardBg: 'transparent',
     },
     {
       id: 'kpi-beds',
@@ -95,9 +116,14 @@ export default function KPIBentoGrid() {
       value: `${data.bedOccupancyPct}%`,
       sub: `${data.occupiedBeds} of ${data.totalBeds} beds occupied`,
       icon: BedDouble,
-      trend: 'Live', trendDir: 'flat', trendBad: false,
-      leftBorder: '4px solid transparent', valueCls: 'text-white',
-      iconBg: 'rgba(148,163,184,0.10)', iconColor: '#94A3B8', cardBg: 'transparent',
+      trend: 'Live',
+      trendDir: 'flat',
+      trendBad: false,
+      leftBorder: '4px solid transparent',
+      valueCls: 'text-white',
+      iconBg: 'rgba(148,163,184,0.10)',
+      iconColor: '#94A3B8',
+      cardBg: 'transparent',
     },
     {
       id: 'kpi-map',
@@ -105,9 +131,14 @@ export default function KPIBentoGrid() {
       value: `${data.avgMap} mmHg`,
       sub: `${data.hypotensiveCount} patient hypotensive`,
       icon: Activity,
-      trend: 'Live', trendDir: 'flat', trendBad: false,
-      leftBorder: '4px solid transparent', valueCls: 'text-white',
-      iconBg: 'rgba(16,185,129,0.10)', iconColor: '#10B981', cardBg: 'transparent',
+      trend: 'Live',
+      trendDir: 'flat',
+      trendBad: false,
+      leftBorder: '4px solid transparent',
+      valueCls: 'text-white',
+      iconBg: 'rgba(16,185,129,0.10)',
+      iconColor: '#10B981',
+      cardBg: 'transparent',
     },
     {
       id: 'kpi-ai',
@@ -115,9 +146,14 @@ export default function KPIBentoGrid() {
       value: data.highAiRiskCount.toString(),
       sub: 'Deterioration risk >50%',
       icon: Brain,
-      trend: 'Live', trendDir: 'flat', trendBad: false,
-      leftBorder: '4px solid transparent', valueCls: 'text-violet-400',
-      iconBg: 'rgba(139,92,246,0.10)', iconColor: '#8B5CF6', cardBg: 'rgba(139,92,246,0.05)',
+      trend: 'Live',
+      trendDir: 'flat',
+      trendBad: false,
+      leftBorder: '4px solid transparent',
+      valueCls: 'text-violet-400',
+      iconBg: 'rgba(139,92,246,0.10)',
+      iconColor: '#8B5CF6',
+      cardBg: 'rgba(139,92,246,0.05)',
     },
   ];
 
@@ -126,9 +162,12 @@ export default function KPIBentoGrid() {
       {KPI_DATA.map((kpi) => {
         const Icon = kpi.icon;
         const TrendIcon =
-          kpi.trendDir === 'up' ? TrendingUp :
-          kpi.trendDir === 'down' ? TrendingDown : Minus;
-        const trendColor = kpi.trendBad ? '#f87171' : kpi.trendDir === 'up' ? '#34d399' : 'hsl(215,18%,55%)';
+          kpi.trendDir === 'up' ? TrendingUp : kpi.trendDir === 'down' ? TrendingDown : Minus;
+        const trendColor = kpi.trendBad
+          ? '#f87171'
+          : kpi.trendDir === 'up'
+            ? '#34d399'
+            : 'hsl(215,18%,55%)';
 
         return (
           <div
@@ -136,20 +175,25 @@ export default function KPIBentoGrid() {
             className="relative flex flex-col gap-3 p-4 rounded-2xl border transition-all duration-150"
             style={{
               backgroundColor: `hsl(222,22%,11%)`,
-              background: kpi.cardBg !== 'transparent'
-                ? `linear-gradient(135deg, ${kpi.cardBg}, hsl(222,22%,11%))`
-                : 'hsl(222,22%,11%)',
+              background:
+                kpi.cardBg !== 'transparent'
+                  ? `linear-gradient(135deg, ${kpi.cardBg}, hsl(222,22%,11%))`
+                  : 'hsl(222,22%,11%)',
               borderColor: 'hsl(220,18%,18%)',
               borderLeft: kpi.leftBorder,
             }}
           >
             <div className="flex items-center justify-between">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center border"
-                style={{ backgroundColor: kpi.iconBg, borderColor: kpi.iconBg }}>
+              <div
+                className="w-8 h-8 rounded-xl flex items-center justify-center border"
+                style={{ backgroundColor: kpi.iconBg, borderColor: kpi.iconBg }}
+              >
                 <Icon className="w-4 h-4" style={{ color: kpi.iconColor }} />
               </div>
-              <div className="flex items-center gap-1 text-[10px] font-medium font-mono"
-                style={{ color: trendColor }}>
+              <div
+                className="flex items-center gap-1 text-[10px] font-medium font-mono"
+                style={{ color: trendColor }}
+              >
                 <TrendIcon className="w-3 h-3" />
                 <span>{kpi.trend}</span>
               </div>
@@ -159,9 +203,7 @@ export default function KPIBentoGrid() {
               <p className={`text-3xl font-bold tabular-nums leading-none ${kpi.valueCls}`}>
                 {kpi.value}
               </p>
-              <p className="text-xs font-semibold text-white mt-1.5 leading-tight">
-                {kpi.label}
-              </p>
+              <p className="text-xs font-semibold text-white mt-1.5 leading-tight">{kpi.label}</p>
               <p className="text-[10px] mt-0.5 leading-tight" style={{ color: 'hsl(215,18%,55%)' }}>
                 {kpi.sub}
               </p>

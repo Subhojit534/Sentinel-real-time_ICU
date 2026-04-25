@@ -4,8 +4,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
 import {
-  LayoutDashboard, BellRing, BedDouble,
-  Activity, Users, Settings, LogOut,
+  LayoutDashboard,
+  BellRing,
+  BedDouble,
+  Activity,
+  Users,
+  Settings,
+  LogOut,
 } from 'lucide-react';
 import { getSession, clearSession, getInitials } from '@/lib/session';
 
@@ -20,28 +25,71 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { key: 'nav-dashboard', label: 'ICU Dashboard',  href: '/icu-monitoring-dashboard', icon: LayoutDashboard, group: 'monitor', exactMatch: true },
-  { key: 'nav-alerts',    label: 'Alert Panel',    href: '/alert-management-panel',   icon: BellRing, badge: 5, group: 'monitor', exactMatch: true },
-  { key: 'nav-beds',      label: 'Bed Management', href: '/bed-management',           icon: BedDouble, group: 'monitor', exactMatch: true },
-  { key: 'nav-vitals',    label: 'Vitals History', href: '/vitals-history',           icon: Activity,  group: 'clinical', exactMatch: true },
-  { key: 'nav-patients',  label: 'Patients',       href: '/patients',                 icon: Users,     group: 'clinical', exactMatch: true },
-  { key: 'nav-settings',  label: 'Settings',       href: '/settings',                 icon: Settings,  group: 'system',   exactMatch: true },
+  {
+    key: 'nav-dashboard',
+    label: 'ICU Dashboard',
+    href: '/icu-monitoring-dashboard',
+    icon: LayoutDashboard,
+    group: 'monitor',
+    exactMatch: true,
+  },
+  {
+    key: 'nav-alerts',
+    label: 'Alert Panel',
+    href: '/alert-management-panel',
+    icon: BellRing,
+    badge: 5,
+    group: 'monitor',
+    exactMatch: true,
+  },
+  {
+    key: 'nav-beds',
+    label: 'Bed Management',
+    href: '/bed-management',
+    icon: BedDouble,
+    group: 'monitor',
+    exactMatch: true,
+  },
+  {
+    key: 'nav-vitals',
+    label: 'Vitals History',
+    href: '/vitals-history',
+    icon: Activity,
+    group: 'clinical',
+    exactMatch: true,
+  },
+  {
+    key: 'nav-patients',
+    label: 'Patients',
+    href: '/patients',
+    icon: Users,
+    group: 'clinical',
+    exactMatch: true,
+  },
+  {
+    key: 'nav-settings',
+    label: 'Settings',
+    href: '/settings',
+    icon: Settings,
+    group: 'system',
+    exactMatch: true,
+  },
 ];
 
 const GROUPS = [
-  { key: 'group-monitor',  id: 'monitor',  label: 'Monitoring' },
+  { key: 'group-monitor', id: 'monitor', label: 'Monitoring' },
   { key: 'group-clinical', id: 'clinical', label: 'Clinical' },
-  { key: 'group-system',   id: 'system',   label: 'System' },
+  { key: 'group-system', id: 'system', label: 'System' },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [activeKey, setActiveKey] = useState<string>(() => {
     if (pathname.startsWith('/alert-management-panel')) return 'nav-alerts';
-    if (pathname.startsWith('/bed-management'))         return 'nav-beds';
-    if (pathname.startsWith('/vitals-history'))         return 'nav-vitals';
-    if (pathname.startsWith('/patients'))               return 'nav-patients';
-    if (pathname.startsWith('/settings'))               return 'nav-settings';
+    if (pathname.startsWith('/bed-management')) return 'nav-beds';
+    if (pathname.startsWith('/vitals-history')) return 'nav-vitals';
+    if (pathname.startsWith('/patients')) return 'nav-patients';
+    if (pathname.startsWith('/settings')) return 'nav-settings';
     return 'nav-dashboard';
   });
   const [user, setUser] = useState({ name: 'Loading...', role: 'doctor', wardId: 'ward-icu-a' });
@@ -56,17 +104,24 @@ export default function Sidebar() {
   };
 
   return (
-    <aside style={{ backgroundColor: 'hsl(220,20%,8%)', borderRight: '1px solid hsl(220,18%,18%)' }}
+    <aside
+      style={{ backgroundColor: 'hsl(220,20%,8%)', borderRight: '1px solid hsl(220,18%,18%)' }}
       className="flex flex-col w-60 h-screen flex-shrink-0"
     >
       {/* Brand */}
-      <div style={{ borderBottom: '1px solid hsl(220,18%,18%)' }} className="flex items-center gap-3 h-16 px-5 flex-shrink-0">
+      <div
+        style={{ borderBottom: '1px solid hsl(220,18%,18%)' }}
+        className="flex items-center gap-3 h-16 px-5 flex-shrink-0"
+      >
         <AppLogo size={28} />
         <div className="flex flex-col">
           <span className="text-sm font-bold text-white tracking-tight leading-none">
             ProjectSentinel
           </span>
-          <span className="text-[10px] tracking-widest uppercase mt-0.5 font-mono" style={{ color: 'hsl(215,18%,55%)' }}>
+          <span
+            className="text-[10px] tracking-widest uppercase mt-0.5 font-mono"
+            style={{ color: 'hsl(215,18%,55%)' }}
+          >
             ICU Monitor
           </span>
         </div>
@@ -78,15 +133,21 @@ export default function Sidebar() {
           const items = NAV_ITEMS.filter((i) => i.group === group.id);
           return (
             <div key={group.key} className="mb-6">
-              <p className="text-[10px] font-semibold tracking-widest uppercase px-3 mb-1.5 font-mono"
-                style={{ color: 'hsl(215,15%,38%)' }}>
+              <p
+                className="text-[10px] font-semibold tracking-widest uppercase px-3 mb-1.5 font-mono"
+                style={{ color: 'hsl(215,15%,38%)' }}
+              >
                 {group.label}
               </p>
               <div className="space-y-0.5">
                 {items.map((item) => {
                   // Only the item we explicitly clicked (or matches pathname) is active
-                  const isActive = activeKey === item.key ||
-                    (item.exactMatch && pathname === item.href && activeKey !== 'nav-alerts' && item.key === 'nav-dashboard') ||
+                  const isActive =
+                    activeKey === item.key ||
+                    (item.exactMatch &&
+                      pathname === item.href &&
+                      activeKey !== 'nav-alerts' &&
+                      item.key === 'nav-dashboard') ||
                     (item.exactMatch && pathname === item.href && item.key === 'nav-alerts');
 
                   // More precise: use activeKey as the source of truth
@@ -107,7 +168,8 @@ export default function Sidebar() {
                       }}
                       onMouseEnter={(e) => {
                         if (!active) {
-                          (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.05)';
+                          (e.currentTarget as HTMLElement).style.backgroundColor =
+                            'rgba(255,255,255,0.05)';
                           (e.currentTarget as HTMLElement).style.color = 'hsl(210,30%,94%)';
                         }
                       }}
@@ -138,20 +200,35 @@ export default function Sidebar() {
       <div style={{ borderTop: '1px solid hsl(220,18%,18%)' }} className="p-4 flex-shrink-0">
         <div className="flex items-center gap-3 mb-3">
           <div className="relative flex-shrink-0">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)' }}>
-              <span className="text-xs font-bold" style={{ color: 'hsl(217,91%,60%)' }}>{getInitials(user.name)}</span>
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center"
+              style={{
+                backgroundColor: 'rgba(59,130,246,0.15)',
+                border: '1px solid rgba(59,130,246,0.3)',
+              }}
+            >
+              <span className="text-xs font-bold" style={{ color: 'hsl(217,91%,60%)' }}>
+                {getInitials(user.name)}
+              </span>
             </div>
-            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full"
-              style={{ border: '2px solid hsl(220,20%,8%)' }} />
+            <span
+              className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full"
+              style={{ border: '2px solid hsl(220,20%,8%)' }}
+            />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold text-white truncate">{user.name}</p>
-            <p className="text-[10px] truncate" style={{ color: 'hsl(215,18%,55%)' }}>{user.wardId.replace('ward-icu-', 'ICU ').toUpperCase()} · {user.role.charAt(0).toUpperCase() + user.role.slice(1)}</p>
+            <p className="text-[10px] truncate" style={{ color: 'hsl(215,18%,55%)' }}>
+              {user.wardId.replace('ward-icu-', 'ICU ').toUpperCase()} ·{' '}
+              {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+            </p>
           </div>
         </div>
         <button
-          onClick={() => { clearSession(); window.location.href = '/sign-up-login-screen'; }}
+          onClick={() => {
+            clearSession();
+            window.location.href = '/sign-up-login-screen';
+          }}
           className="flex items-center gap-2 w-full px-3 py-2 rounded-xl transition-all duration-150 text-xs"
           style={{ color: 'hsl(215,18%,55%)' }}
           onMouseEnter={(e) => {

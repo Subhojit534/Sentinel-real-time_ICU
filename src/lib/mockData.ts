@@ -49,7 +49,7 @@ export const MOCK_PATIENTS: Patient[] = [
   },
   {
     id: 'pt-002',
-    name: 'Margaret O\'Sullivan',
+    name: "Margaret O'Sullivan",
     age: 74,
     gender: 'F',
     bedId: 'bed-a02',
@@ -203,11 +203,46 @@ export const MOCK_PATIENTS: Patient[] = [
 ];
 
 export const MOCK_WARDS: Ward[] = [
-  { id: 'ward-icu-a', name: 'ICU Alpha', hospitalId: 'hosp-1', totalBeds: 8, occupiedBeds: 7, criticalPatients: 2 },
-  { id: 'ward-icu-b', name: 'ICU Beta', hospitalId: 'hosp-1', totalBeds: 8, occupiedBeds: 6, criticalPatients: 1 },
-  { id: 'ward-icu-c', name: 'ICU Gamma', hospitalId: 'hosp-1', totalBeds: 10, occupiedBeds: 8, criticalPatients: 0 },
-  { id: 'ward-icu-d', name: 'Cardiac ICU', hospitalId: 'hosp-2', totalBeds: 6, occupiedBeds: 5, criticalPatients: 1 },
-  { id: 'ward-icu-e', name: 'Neuro ICU', hospitalId: 'hosp-2', totalBeds: 8, occupiedBeds: 4, criticalPatients: 0 },
+  {
+    id: 'ward-icu-a',
+    name: 'ICU Alpha',
+    hospitalId: 'hosp-1',
+    totalBeds: 8,
+    occupiedBeds: 7,
+    criticalPatients: 2,
+  },
+  {
+    id: 'ward-icu-b',
+    name: 'ICU Beta',
+    hospitalId: 'hosp-1',
+    totalBeds: 8,
+    occupiedBeds: 6,
+    criticalPatients: 1,
+  },
+  {
+    id: 'ward-icu-c',
+    name: 'ICU Gamma',
+    hospitalId: 'hosp-1',
+    totalBeds: 10,
+    occupiedBeds: 8,
+    criticalPatients: 0,
+  },
+  {
+    id: 'ward-icu-d',
+    name: 'Cardiac ICU',
+    hospitalId: 'hosp-2',
+    totalBeds: 6,
+    occupiedBeds: 5,
+    criticalPatients: 1,
+  },
+  {
+    id: 'ward-icu-e',
+    name: 'Neuro ICU',
+    hospitalId: 'hosp-2',
+    totalBeds: 8,
+    occupiedBeds: 4,
+    criticalPatients: 0,
+  },
 ];
 
 export const MOCK_ALERTS: Alert[] = [
@@ -229,7 +264,8 @@ export const MOCK_ALERTS: Alert[] = [
     assignedTo: 'Dr. Priya Sharma',
     escalationLevel: 3,
     aiGenerated: true,
-    notes: 'AI prediction: 88% probability of septic shock deterioration within 2h. Norepinephrine dose adjustment recommended.',
+    notes:
+      'AI prediction: 88% probability of septic shock deterioration within 2h. Norepinephrine dose adjustment recommended.',
   },
   {
     id: 'alert-002',
@@ -270,7 +306,8 @@ export const MOCK_ALERTS: Alert[] = [
     assignedTo: 'Dr. Priya Sharma',
     escalationLevel: 3,
     aiGenerated: true,
-    notes: 'SBAR: Situation — RR 26, SpO2 91% on CPAP 10cmH2O. Background — ARDS Day 3. Assessment — CPAP failure likely. Recommendation — Consider intubation.',
+    notes:
+      'SBAR: Situation — RR 26, SpO2 91% on CPAP 10cmH2O. Background — ARDS Day 3. Assessment — CPAP failure likely. Recommendation — Consider intubation.',
   },
   {
     id: 'alert-004',
@@ -441,11 +478,46 @@ export const MOCK_ALERTS: Alert[] = [
 ];
 
 export const MOCK_USERS: User[] = [
-  { id: 'user-001', name: 'Dr. Priya Sharma', role: 'doctor', hospitalId: 'hosp-1', wardId: 'ward-icu-a', email: 'priya.sharma@sentinel.icu' },
-  { id: 'user-002', name: 'Dr. Vikram Nair', role: 'doctor', hospitalId: 'hosp-1', wardId: 'ward-icu-b', email: 'vikram.nair@sentinel.icu' },
-  { id: 'user-003', name: 'Nurse Kavita Rao', role: 'nurse', hospitalId: 'hosp-1', wardId: 'ward-icu-a', email: 'kavita.rao@sentinel.icu' },
-  { id: 'user-004', name: 'Nurse James Okafor', role: 'nurse', hospitalId: 'hosp-1', wardId: 'ward-icu-b', email: 'james.okafor@sentinel.icu' },
-  { id: 'user-005', name: 'Admin Sys', role: 'admin', hospitalId: 'hosp-1', wardId: 'ward-icu-a', email: 'admin@sentinel.icu' },
+  {
+    id: 'user-001',
+    name: 'Dr. Priya Sharma',
+    role: 'doctor',
+    hospitalId: 'hosp-1',
+    wardId: 'ward-icu-a',
+    email: 'priya.sharma@sentinel.icu',
+  },
+  {
+    id: 'user-002',
+    name: 'Dr. Vikram Nair',
+    role: 'doctor',
+    hospitalId: 'hosp-1',
+    wardId: 'ward-icu-b',
+    email: 'vikram.nair@sentinel.icu',
+  },
+  {
+    id: 'user-003',
+    name: 'Nurse Kavita Rao',
+    role: 'nurse',
+    hospitalId: 'hosp-1',
+    wardId: 'ward-icu-a',
+    email: 'kavita.rao@sentinel.icu',
+  },
+  {
+    id: 'user-004',
+    name: 'Nurse James Okafor',
+    role: 'nurse',
+    hospitalId: 'hosp-1',
+    wardId: 'ward-icu-b',
+    email: 'james.okafor@sentinel.icu',
+  },
+  {
+    id: 'user-005',
+    name: 'Admin Sys',
+    role: 'admin',
+    hospitalId: 'hosp-1',
+    wardId: 'ward-icu-a',
+    email: 'admin@sentinel.icu',
+  },
 ];
 
 export const WARD_ALERT_FREQUENCY = [

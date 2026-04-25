@@ -6,9 +6,9 @@ import { AlertSeverityBadge, AlertStatusBadge } from '@/components/ui/StatusBadg
 import { BellRing, ChevronRight, Brain, Clock, X } from 'lucide-react';
 import Link from 'next/link';
 
-const CARD   = 'hsl(222,22%,11%)';
+const CARD = 'hsl(222,22%,11%)';
 const BORDER = 'hsl(220,18%,18%)';
-const MUTED  = 'hsl(215,18%,55%)';
+const MUTED = 'hsl(215,18%,55%)';
 const SURFACE = 'hsl(220,20%,8%)';
 
 function timeAgo(isoString: string): string {
@@ -20,7 +20,7 @@ function timeAgo(isoString: string): string {
 
 const severityBorderColor = (severity: string) => {
   if (severity === 'critical') return '#EF4444';
-  if (severity === 'high')     return '#F97316';
+  if (severity === 'high') return '#F97316';
   if (severity === 'moderate') return '#F59E0B';
   return 'hsl(220,18%,28%)';
 };
@@ -28,17 +28,20 @@ const severityBorderColor = (severity: string) => {
 export default function LiveAlertSidebar() {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const { alerts: liveAlerts } = useSimulation();
-  const activeAlerts = liveAlerts.filter(a => a.status === 'active' || a.status === 'escalated');
+  const activeAlerts = liveAlerts.filter((a) => a.status === 'active' || a.status === 'escalated');
 
   const visible = activeAlerts.filter((a) => !dismissed.has(a.id));
 
   return (
-    <aside className="w-80 flex-shrink-0 flex flex-col h-full overflow-hidden"
-      style={{ backgroundColor: SURFACE, borderLeft: `1px solid ${BORDER}` }}>
-
+    <aside
+      className="w-80 flex-shrink-0 flex flex-col h-full overflow-hidden"
+      style={{ backgroundColor: SURFACE, borderLeft: `1px solid ${BORDER}` }}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 flex-shrink-0"
-        style={{ borderBottom: `1px solid ${BORDER}` }}>
+      <div
+        className="flex items-center justify-between px-5 py-4 flex-shrink-0"
+        style={{ borderBottom: `1px solid ${BORDER}` }}
+      >
         <div className="flex items-center gap-2.5">
           <BellRing className="w-4 h-4 text-red-400" />
           <span className="text-sm font-semibold text-white">Live Alerts</span>
@@ -48,8 +51,10 @@ export default function LiveAlertSidebar() {
             </span>
           )}
         </div>
-        <Link href="/alert-management-panel"
-          className="text-[11px] text-blue-400 hover:text-blue-300 flex items-center gap-0.5 transition-colors">
+        <Link
+          href="/alert-management-panel"
+          className="text-[11px] text-blue-400 hover:text-blue-300 flex items-center gap-0.5 transition-colors"
+        >
           View all <ChevronRight className="w-3 h-3" />
         </Link>
       </div>
@@ -58,12 +63,16 @@ export default function LiveAlertSidebar() {
       <div className="flex-1 overflow-y-auto scrollbar-thin py-2">
         {visible.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3"
-              style={{ backgroundColor: 'rgba(16,185,129,0.10)' }}>
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center mb-3"
+              style={{ backgroundColor: 'rgba(16,185,129,0.10)' }}
+            >
               <BellRing className="w-5 h-5 text-emerald-400" />
             </div>
             <p className="text-sm font-semibold text-emerald-400">No active alerts</p>
-            <p className="text-xs mt-1" style={{ color: MUTED }}>All patients within normal parameters</p>
+            <p className="text-xs mt-1" style={{ color: MUTED }}>
+              All patients within normal parameters
+            </p>
           </div>
         ) : (
           visible.map((alert) => (
@@ -82,9 +91,16 @@ export default function LiveAlertSidebar() {
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <AlertSeverityBadge severity={alert.severity} />
                     {alert.aiGenerated && (
-                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-semibold"
-                        style={{ backgroundColor: 'rgba(139,92,246,0.10)', color: '#A78BFA', border: '1px solid rgba(139,92,246,0.20)' }}>
-                        <Brain className="w-2.5 h-2.5" />AI
+                      <span
+                        className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-semibold"
+                        style={{
+                          backgroundColor: 'rgba(139,92,246,0.10)',
+                          color: '#A78BFA',
+                          border: '1px solid rgba(139,92,246,0.20)',
+                        }}
+                      >
+                        <Brain className="w-2.5 h-2.5" />
+                        AI
                       </span>
                     )}
                   </div>
@@ -97,18 +113,25 @@ export default function LiveAlertSidebar() {
                   </button>
                 </div>
 
-                <p className="text-xs font-semibold text-white leading-tight">{alert.patientName}</p>
+                <p className="text-xs font-semibold text-white leading-tight">
+                  {alert.patientName}
+                </p>
                 <p className="text-[10px] font-mono mt-0.5" style={{ color: MUTED }}>
                   {alert.bedId.toUpperCase()} · {alert.wardName}
                 </p>
 
-                <div className="mt-2.5 pt-2.5 flex items-center justify-between"
-                  style={{ borderTop: `1px solid ${BORDER}` }}>
+                <div
+                  className="mt-2.5 pt-2.5 flex items-center justify-between"
+                  style={{ borderTop: `1px solid ${BORDER}` }}
+                >
                   <div>
                     <p className="text-[11px] font-semibold text-white">{alert.type}</p>
                     <p className="text-[10px] font-mono" style={{ color: MUTED }}>
                       {alert.triggerMetric}:{' '}
-                      <span className="font-bold" style={{ color: alert.severity === 'critical' ? '#f87171' : '#fbbf24' }}>
+                      <span
+                        className="font-bold"
+                        style={{ color: alert.severity === 'critical' ? '#f87171' : '#fbbf24' }}
+                      >
                         {alert.triggerValue}
                       </span>
                     </p>

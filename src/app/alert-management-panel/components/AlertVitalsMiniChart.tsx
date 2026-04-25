@@ -1,6 +1,14 @@
 'use client';
 import React from 'react';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+} from 'recharts';
 import type { VitalReading } from '@/lib/types';
 
 interface Props {
@@ -70,7 +78,12 @@ export default function AlertVitalsMiniChart({ trend, metric }: Props) {
         />
         <Tooltip content={<MiniTooltip />} />
         {threshold.high !== undefined && (
-          <ReferenceLine y={threshold.high} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={1} />
+          <ReferenceLine
+            y={threshold.high}
+            stroke="#ef4444"
+            strokeDasharray="3 3"
+            strokeWidth={1}
+          />
         )}
         {threshold.low !== undefined && (
           <ReferenceLine y={threshold.low} stroke="#f59e0b" strokeDasharray="3 3" strokeWidth={1} />

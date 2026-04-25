@@ -25,7 +25,9 @@ export const api = {
       return data.patients;
     },
     getVitalsTrend: async (patientId: string, rangeHours = 24): Promise<Patient['trend']> => {
-      const data = await fetcher<{ trend: Patient['trend'] }>(`/api/patients/${patientId}/vitals?range=${rangeHours}`);
+      const data = await fetcher<{ trend: Patient['trend'] }>(
+        `/api/patients/${patientId}/vitals?range=${rangeHours}`
+      );
       return data.trend;
     },
     allocate: async (payload: {
@@ -51,7 +53,11 @@ export const api = {
     },
   },
   alerts: {
-    list: async (params?: { wardId?: string; status?: string; severity?: string }): Promise<Alert[]> => {
+    list: async (params?: {
+      wardId?: string;
+      status?: string;
+      severity?: string;
+    }): Promise<Alert[]> => {
       const q = new URLSearchParams();
       if (params?.wardId) q.append('wardId', params.wardId);
       if (params?.status) q.append('status', params.status);
@@ -59,22 +65,25 @@ export const api = {
       const data = await fetcher<{ alerts: Alert[] }>(`/api/alerts?${q.toString()}`);
       return data.alerts;
     },
-    update: async (id: string, updates: Partial<Pick<Alert, 'status' | 'notes' | 'escalationLevel'>>): Promise<void> => {
+    update: async (
+      id: string,
+      updates: Partial<Pick<Alert, 'status' | 'notes' | 'escalationLevel'>>
+    ): Promise<void> => {
       await fetcher<{ success: boolean }>(`/api/alerts/${id}`, {
         method: 'PATCH',
         body: JSON.stringify(updates),
       });
-    }
+    },
   },
   wards: {
     list: async (): Promise<Ward[]> => {
       const data = await fetcher<{ wards: Ward[] }>('/api/wards');
       return data.wards;
-    }
+    },
   },
   dashboard: {
     kpis: async (): Promise<any> => {
       return fetcher<any>('/api/dashboard/kpis');
-    }
-  }
+    },
+  },
 };

@@ -8,20 +8,32 @@ export async function GET() {
         totalPatients: 10,
         criticalPatients: 3,
         availableBeds: 5,
-        aiAlertsActive: 2
+        aiAlertsActive: 2,
       });
     }
 
-    const { count: totalPatients } = await supabase.from('patients').select('*', { count: 'exact', head: true });
-    const { count: criticalPatients } = await supabase.from('patients').select('*', { count: 'exact', head: true }).in('status', ['critical', 'warning']);
-    const { count: availableBeds } = await supabase.from('beds').select('*', { count: 'exact', head: true }).eq('status', 'available');
-    const { count: aiAlertsActive } = await supabase.from('alerts').select('*', { count: 'exact', head: true }).eq('status', 'active').eq('ai_generated', true);
+    const { count: totalPatients } = await supabase
+      .from('patients')
+      .select('*', { count: 'exact', head: true });
+    const { count: criticalPatients } = await supabase
+      .from('patients')
+      .select('*', { count: 'exact', head: true })
+      .in('status', ['critical', 'warning']);
+    const { count: availableBeds } = await supabase
+      .from('beds')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'available');
+    const { count: aiAlertsActive } = await supabase
+      .from('alerts')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'active')
+      .eq('ai_generated', true);
 
     const kpis = {
       totalPatients: totalPatients || 0,
       criticalPatients: criticalPatients || 0,
       availableBeds: availableBeds || 0,
-      aiAlertsActive: aiAlertsActive || 0
+      aiAlertsActive: aiAlertsActive || 0,
     };
 
     return NextResponse.json(kpis);
