@@ -15,7 +15,19 @@
 
 ---
 
-[Live Demo](https://sentinel-real-time-icu.vercel.app/) &nbsp;·&nbsp; [Report a Bug](#) &nbsp;·&nbsp; [Request a Feature](#)
+[Live Demo](https://sentinel-real-time-icu.vercel.app/) &nbsp;·&nbsp; [📺 Watch Demo](https://youtu.be/8XLUwRBI2Wg) &nbsp;·&nbsp; [Report a Bug](#) &nbsp;·&nbsp; [Request a Feature](#)
+
+</div>
+
+---
+
+## 🎬 Demo Video
+
+<div align="center">
+
+[![Watch the Demo](https://img.youtube.com/vi/8XLUwRBI2Wg/maxresdefault.jpg)](https://youtu.be/8XLUwRBI2Wg)
+
+🔗 **[Watch the full walkthrough on YouTube →](https://youtu.be/8XLUwRBI2Wg)**
 
 </div>
 
