@@ -15,7 +15,7 @@
 
 ---
 
-[Live Demo](#) &nbsp;·&nbsp; [Report a Bug](#) &nbsp;·&nbsp; [Request a Feature](#)
+[Live Demo](https://sentinel-real-time-icu.vercel.app/) &nbsp;·&nbsp; [Report a Bug](#) &nbsp;·&nbsp; [Request a Feature](#)
 
 </div>
 
