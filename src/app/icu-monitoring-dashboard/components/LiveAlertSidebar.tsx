@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
+import { useSimulation } from '@/providers/SimulationProvider';
 import type { Alert } from '@/lib/types';
 import { AlertSeverityBadge, AlertStatusBadge } from '@/components/ui/StatusBadge';
 import { BellRing, ChevronRight, Brain, Clock, X } from 'lucide-react';
@@ -26,24 +26,11 @@ const severityBorderColor = (severity: string) => {
 };
 
 export default function LiveAlertSidebar() {
-  const [alerts, setAlerts] = useState<Alert[]>([]);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const { alerts: liveAlerts } = useSimulation();
+  const activeAlerts = liveAlerts.filter(a => a.status === 'active' || a.status === 'escalated');
 
-  useEffect(() => {
-    const fetchAlerts = async () => {
-      try {
-        const data = await api.alerts.list({ status: 'active,escalated' });
-        setAlerts(data);
-      } catch (err) {
-        console.error('Failed to fetch live alerts', err);
-      }
-    };
-    fetchAlerts();
-    const interval = setInterval(fetchAlerts, 10000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const visible = alerts.filter((a) => !dismissed.has(a.id));
+  const visible = activeAlerts.filter((a) => !dismissed.has(a.id));
 
   return (
     <aside className="w-80 flex-shrink-0 flex flex-col h-full overflow-hidden"

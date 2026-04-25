@@ -175,11 +175,14 @@ export default function VitalsHistoryPage() {
               const isAlert = val < v.refLow || val > v.refHigh;
               const Icon = v.icon;
               return (
-                <div key={v.key} className="p-3.5 rounded-2xl border transition-all"
+                <div key={v.key} className="p-3.5 rounded-2xl transition-all"
                   style={{
                     backgroundColor: isAlert ? `${v.color}10` : CARD,
+                    borderWidth: '1px',
+                    borderStyle: 'solid',
                     borderColor: isAlert ? `${v.color}50` : BORDER,
-                    borderLeft: isAlert ? `3px solid ${v.color}` : `3px solid transparent`,
+                    borderLeftWidth: '3px',
+                    borderLeftColor: isAlert ? v.color : 'transparent',
                   }}>
                   <div className="flex items-center justify-between mb-2">
                     <Icon className="w-3.5 h-3.5" style={{ color: v.color }} />

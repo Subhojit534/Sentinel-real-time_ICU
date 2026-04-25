@@ -5,10 +5,13 @@ import { api } from '@/lib/api';
 import { PatientStatusBadge } from '@/components/ui/StatusBadge';
 import NEWS2Badge from '@/components/ui/NEWS2Badge';
 import AIRiskBadge from '@/components/ui/AIRiskBadge';
+import { generatePatientPDF } from '@/lib/generatePatientPDF';
+import { getSession } from '@/lib/session';
 import {
   Users, Search, User, Calendar, Stethoscope,
   Heart, Droplets, Activity, ChevronRight, X,
-  ClipboardList, Brain,
+  ClipboardList, Brain, FileDown, CheckSquare, Square,
+  Loader2,
 } from 'lucide-react';
 import type { Patient } from '@/lib/types';
 
@@ -17,7 +20,11 @@ const BORDER  = 'hsl(220,18%,18%)';
 const MUTED   = 'hsl(215,18%,55%)';
 const SURFACE = 'hsl(220,20%,8%)';
 
-function PatientDetailPanel({ patient, onClose }: { patient: Patient; onClose: () => void }) {
+function PatientDetailPanel({ patient, onClose, onExportSingle }: {
+  patient: Patient;
+  onClose: () => void;
+  onExportSingle: (p: Patient) => void;
+}) {
   const v = patient.vitals;
   const vitals = [
     { label: 'Heart Rate', value: `${v.hr} bpm`,          alert: v.hr > 110 || v.hr < 50,   color: '#EF4444' },
@@ -36,11 +43,22 @@ function PatientDetailPanel({ patient, onClose }: { patient: Patient; onClose: (
       <div className="flex items-center justify-between px-5 py-4 flex-shrink-0"
         style={{ borderBottom: `1px solid ${BORDER}` }}>
         <h3 className="text-sm font-bold text-white">Patient Details</h3>
-        <button onClick={onClose}
-          className="w-7 h-7 rounded-lg flex items-center justify-center transition-all hover:text-white"
-          style={{ backgroundColor: CARD, border: `1px solid ${BORDER}`, color: MUTED }}>
-          <X className="w-3.5 h-3.5" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onExportSingle(patient)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all"
+            style={{ backgroundColor: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', color: '#60A5FA' }}
+            title="Export this patient as PDF"
+          >
+            <FileDown className="w-3 h-3" />
+            PDF
+          </button>
+          <button onClick={onClose}
+            className="w-7 h-7 rounded-lg flex items-center justify-center transition-all hover:text-white"
+            style={{ backgroundColor: CARD, border: `1px solid ${BORDER}`, color: MUTED }}>
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto scrollbar-thin">
@@ -146,6 +164,8 @@ export default function PatientsPage() {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+  const [exporting, setExporting] = useState(false);
 
   React.useEffect(() => {
     const fetchPatients = async () => {
@@ -185,6 +205,39 @@ export default function PatientsPage() {
     stable:   patients.filter((p) => p.status === 'stable').length,
   };
 
+  const toggleCheck = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCheckedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    if (checkedIds.size === sorted.length) {
+      setCheckedIds(new Set());
+    } else {
+      setCheckedIds(new Set(sorted.map(p => p.id)));
+    }
+  };
+
+  const handleExport = async (patientsToExport: Patient[]) => {
+    setExporting(true);
+    try {
+      const session = getSession();
+      const reporter = session?.name || 'Sentinel ICU Clinician';
+      await generatePatientPDF(patientsToExport, reporter);
+    } catch (err) {
+      console.error('PDF generation failed:', err);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const selectedPatients = patients.filter(p => checkedIds.has(p.id));
+
   if (loading) {
     return (
       <AppLayout>
@@ -202,12 +255,50 @@ export default function PatientsPage() {
           <div className="px-6 py-5 space-y-5 max-w-screen-2xl mx-auto">
 
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-3">
               <div>
                 <h1 className="text-xl font-bold text-white tracking-tight">Patients</h1>
                 <p className="text-xs mt-0.5" style={{ color: MUTED }}>
                   {patients.length} patients across all wards
                 </p>
+              </div>
+
+              {/* PDF Export toolbar */}
+              <div className="flex items-center gap-2">
+                {checkedIds.size > 0 && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl border"
+                    style={{ backgroundColor: 'rgba(59,130,246,0.08)', borderColor: 'rgba(59,130,246,0.25)' }}>
+                    <span className="text-xs font-semibold text-blue-400">{checkedIds.size} selected</span>
+                    <button
+                      onClick={() => setCheckedIds(new Set())}
+                      className="text-xs text-blue-400 hover:text-blue-300 transition-colors ml-1"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                )}
+
+                <button
+                  id="btn-export-pdf"
+                  onClick={() => checkedIds.size > 0 ? handleExport(selectedPatients) : handleExport(sorted)}
+                  disabled={exporting}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all active:scale-[0.97]"
+                  style={{
+                    backgroundColor: checkedIds.size > 0 ? 'rgba(59,130,246,0.85)' : 'rgba(59,130,246,0.15)',
+                    border: '1px solid rgba(59,130,246,0.35)',
+                    color: checkedIds.size > 0 ? '#fff' : '#60A5FA',
+                    opacity: exporting ? 0.6 : 1,
+                  }}
+                >
+                  {exporting
+                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                    : <FileDown className="w-4 h-4" />}
+                  {exporting
+                    ? 'Generating PDF…'
+                    : checkedIds.size > 0
+                      ? `Export ${checkedIds.size} Patient${checkedIds.size > 1 ? 's' : ''}`
+                      : 'Export All'}
+                </button>
               </div>
             </div>
 
@@ -221,14 +312,21 @@ export default function PatientsPage() {
               ].map((s) => (
                 <div key={s.label} onClick={() => setStatusFilter(s.label.toLowerCase())}
                   className="flex items-center gap-4 p-4 rounded-2xl border cursor-pointer transition-all duration-150 hover:opacity-90"
-                  style={{ backgroundColor: s.bg, borderColor: s.border, borderLeft: `4px solid ${s.left}` }}>
+                  style={{
+                    backgroundColor: s.bg,
+                    borderTopWidth: '1px', borderRightWidth: '1px',
+                    borderBottomWidth: '1px', borderLeftWidth: '4px',
+                    borderStyle: 'solid',
+                    borderTopColor: s.border, borderRightColor: s.border,
+                    borderBottomColor: s.border, borderLeftColor: s.left,
+                  }}>
                   <p className="text-3xl font-bold text-white tabular-nums">{s.count}</p>
                   <p className="text-sm font-semibold" style={{ color: s.color }}>{s.label}</p>
                 </div>
               ))}
             </div>
 
-            {/* Filters */}
+            {/* Filters + Select All */}
             <div className="flex items-center gap-3 flex-wrap">
               <div className="flex items-center gap-2 rounded-xl px-3 py-1.5 flex-1 min-w-[240px] max-w-sm"
                 style={{ backgroundColor: CARD, border: `1px solid ${BORDER}` }}>
@@ -264,6 +362,18 @@ export default function PatientsPage() {
                 <option value="ward-icu-c">ICU Gamma</option>
                 <option value="ward-icu-d">Cardiac ICU</option>
               </select>
+
+              {/* Select All toggle */}
+              <button
+                onClick={toggleAll}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all"
+                style={{ backgroundColor: CARD, border: `1px solid ${BORDER}`, color: MUTED }}
+              >
+                {checkedIds.size === sorted.length && sorted.length > 0
+                  ? <CheckSquare className="w-3.5 h-3.5 text-blue-400" />
+                  : <Square className="w-3.5 h-3.5" />}
+                {checkedIds.size === sorted.length && sorted.length > 0 ? 'Deselect All' : 'Select All'}
+              </button>
             </div>
 
             {/* Patient cards grid */}
@@ -272,18 +382,35 @@ export default function PatientsPage() {
                 const isCritical = patient.status === 'critical' || patient.status === 'code';
                 const borderLeft = isCritical ? '3px solid #EF4444' : patient.status === 'warning' ? '3px solid #F59E0B' : patient.status === 'watch' ? '3px solid #3B82F6' : '3px solid transparent';
                 const isSelected = selectedPatient?.id === patient.id;
+                const isChecked = checkedIds.has(patient.id);
 
                 return (
                   <div key={patient.id}
                     onClick={() => setSelectedPatient(isSelected ? null : patient)}
-                    className="rounded-2xl border p-4 cursor-pointer transition-all duration-150"
+                    className="rounded-2xl border p-4 cursor-pointer transition-all duration-150 relative"
                     style={{
                       backgroundColor: isSelected ? 'rgba(59,130,246,0.06)' : CARD,
-                      borderColor: isSelected ? 'rgba(59,130,246,0.3)' : BORDER,
-                      borderLeft,
+                      borderTopWidth: '1px', borderRightWidth: '1px',
+                      borderBottomWidth: '1px', borderLeftWidth: '3px',
+                      borderStyle: 'solid',
+                      borderTopColor:    isChecked ? 'rgba(59,130,246,0.5)' : isSelected ? 'rgba(59,130,246,0.3)' : BORDER,
+                      borderRightColor:  isChecked ? 'rgba(59,130,246,0.5)' : isSelected ? 'rgba(59,130,246,0.3)' : BORDER,
+                      borderBottomColor: isChecked ? 'rgba(59,130,246,0.5)' : isSelected ? 'rgba(59,130,246,0.3)' : BORDER,
+                      borderLeftColor:   isCritical ? '#EF4444' : patient.status === 'warning' ? '#F59E0B' : patient.status === 'watch' ? '#3B82F6' : 'transparent',
                     }}>
 
-                    <div className="flex items-start justify-between gap-2 mb-3">
+                    {/* Checkbox */}
+                    <button
+                      onClick={(e) => toggleCheck(patient.id, e)}
+                      className="absolute top-3 right-3 p-0.5 rounded transition-all z-10"
+                      title={isChecked ? 'Deselect for PDF' : 'Select for PDF'}
+                    >
+                      {isChecked
+                        ? <CheckSquare className="w-4 h-4 text-blue-400" />
+                        : <Square className="w-4 h-4 opacity-40 hover:opacity-100 transition-opacity" style={{ color: MUTED }} />}
+                    </button>
+
+                    <div className="flex items-start justify-between gap-2 mb-3 pr-6">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
                           style={{ backgroundColor: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.25)', color: '#60A5FA' }}>
@@ -343,7 +470,11 @@ export default function PatientsPage() {
 
         {/* Detail panel */}
         {selectedPatient && (
-          <PatientDetailPanel patient={selectedPatient} onClose={() => setSelectedPatient(null)} />
+          <PatientDetailPanel
+            patient={selectedPatient}
+            onClose={() => setSelectedPatient(null)}
+            onExportSingle={(p) => handleExport([p])}
+          />
         )}
       </div>
     </AppLayout>

@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Shield, Loader2, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import AppLogo from '@/components/ui/AppLogo';
+import { supabase } from '@/lib/supabase';
+import { saveSession } from '@/lib/session';
 
 interface LoginFormData {
   email: string;
@@ -50,16 +52,58 @@ export default function LoginForm({ onSwitchToSignup }: Props) {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-    // Backend: POST /api/auth/login with { email, password }
-    await new Promise((r) => setTimeout(r, 1200));
-    if (!validateCredentials(data.email, data.password)) {
-      setError('root', { message: 'Invalid credentials — use the demo accounts below to sign in' });
+    
+    let isValid = false;
+    let sessionUser = null;
+
+    if (supabase) {
+      // Check the database first
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', data.email)
+        .eq('password', data.password)
+        .single();
+        
+      if (!error && user) {
+        isValid = true;
+        sessionUser = {
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          wardId: user.ward_id,
+          hospitalId: user.hospital_id,
+        };
+      }
+    }
+
+    // Fallback to the hardcoded demo credentials if DB login fails
+    if (!isValid) {
+      const demoCred = DEMO_CREDENTIALS.find(
+        (c) => c.email === data.email && c.password === data.password
+      );
+      if (demoCred) {
+        isValid = true;
+        // Map demo email to a sensible name
+        const demoNames: Record<string, { name: string; role: string; wardId: string }> = {
+          'priya.sharma@sentinel.icu':  { name: 'Dr. Priya Sharma', role: 'doctor', wardId: 'ward-icu-a' },
+          'kavita.rao@sentinel.icu':    { name: 'Nurse Kavita Rao', role: 'nurse',  wardId: 'ward-icu-a' },
+          'admin@sentinel.icu':         { name: 'Admin Sys',        role: 'admin',  wardId: 'ward-icu-a' },
+        };
+        const mapped = demoNames[data.email];
+        if (mapped) sessionUser = { name: mapped.name, email: data.email, role: mapped.role, wardId: mapped.wardId };
+      }
+    }
+
+    if (!isValid) {
+      setError('root', { message: 'Invalid credentials. Check your email and password.' });
       setIsLoading(false);
       return;
     }
+
+    if (sessionUser) saveSession(sessionUser);
     toast.success('Signed in successfully. Loading dashboard...');
-    await new Promise((r) => setTimeout(r, 600));
-    router.push('/icu-monitoring-dashboard');
+    setTimeout(() => router.push('/icu-monitoring-dashboard'), 600);
   };
 
   const autofill = (cred: DemoCredential) => {

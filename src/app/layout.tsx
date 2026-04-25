@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Metadata, Viewport } from 'next';
 import '../styles/tailwind.css';
-import ToasterProvider from '@/components/ToasterProvider';
+import AppProviders from '@/components/AppProviders';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -23,9 +23,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="bg-background text-foreground antialiased">
-        {children}
-        <ToasterProvider />
-</body>
+        <AppProviders>
+          {children}
+        </AppProviders>
+      </body>
     </html>
   );
 }

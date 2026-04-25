@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
@@ -7,6 +7,7 @@ import {
   LayoutDashboard, BellRing, BedDouble,
   Activity, Users, Settings, LogOut,
 } from 'lucide-react';
+import { getSession, clearSession, getInitials } from '@/lib/session';
 
 interface NavItem {
   key: string;
@@ -43,6 +44,12 @@ export default function Sidebar() {
     if (pathname.startsWith('/settings'))               return 'nav-settings';
     return 'nav-dashboard';
   });
+  const [user, setUser] = useState({ name: 'Loading...', role: 'doctor', wardId: 'ward-icu-a' });
+
+  useEffect(() => {
+    const s = getSession();
+    if (s) setUser({ name: s.name, role: s.role, wardId: s.wardId || 'ward-icu-a' });
+  }, []);
 
   const handleNavClick = (key: string) => {
     setActiveKey(key);
@@ -133,18 +140,18 @@ export default function Sidebar() {
           <div className="relative flex-shrink-0">
             <div className="w-8 h-8 rounded-full flex items-center justify-center"
               style={{ backgroundColor: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)' }}>
-              <span className="text-xs font-bold" style={{ color: 'hsl(217,91%,60%)' }}>PS</span>
+              <span className="text-xs font-bold" style={{ color: 'hsl(217,91%,60%)' }}>{getInitials(user.name)}</span>
             </div>
             <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full"
               style={{ border: '2px solid hsl(220,20%,8%)' }} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold text-white truncate">Dr. Priya Sharma</p>
-            <p className="text-[10px] truncate" style={{ color: 'hsl(215,18%,55%)' }}>ICU Alpha · Doctor</p>
+            <p className="text-xs font-semibold text-white truncate">{user.name}</p>
+            <p className="text-[10px] truncate" style={{ color: 'hsl(215,18%,55%)' }}>{user.wardId.replace('ward-icu-', 'ICU ').toUpperCase()} · {user.role.charAt(0).toUpperCase() + user.role.slice(1)}</p>
           </div>
         </div>
         <button
-          onClick={() => window.location.href = '/sign-up-login-screen'}
+          onClick={() => { clearSession(); window.location.href = '/sign-up-login-screen'; }}
           className="flex items-center gap-2 w-full px-3 py-2 rounded-xl transition-all duration-150 text-xs"
           style={{ color: 'hsl(215,18%,55%)' }}
           onMouseEnter={(e) => {

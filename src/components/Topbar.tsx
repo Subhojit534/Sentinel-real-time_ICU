@@ -1,7 +1,8 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bell, Search, Activity, Shield } from 'lucide-react';
 import Link from 'next/link';
+import { getSession, getInitials } from '@/lib/session';
 
 const WARDS = [
   { id: 'all',        label: 'All Wards' },
@@ -23,6 +24,12 @@ function LiveClock() {
 
 export default function Topbar() {
   const [wardFilter, setWardFilter] = useState('all');
+  const [user, setUser] = useState({ name: 'Loading...', role: 'Doctor' });
+
+  useEffect(() => {
+    const s = getSession();
+    if (s) setUser({ name: s.name, role: s.role.charAt(0).toUpperCase() + s.role.slice(1) });
+  }, []);
 
   return (
     <header className="h-14 border-b border-[hsl(220,18%,18%)] flex items-center px-5 gap-4 flex-shrink-0"
@@ -96,15 +103,15 @@ export default function Topbar() {
       {/* User */}
       <div className="flex items-center gap-2.5">
         <div className="text-right hidden sm:block">
-          <p className="text-xs font-semibold text-white leading-none">Dr. Priya Sharma</p>
+          <p className="text-xs font-semibold text-white leading-none">{user.name}</p>
           <div className="flex items-center justify-end gap-1 mt-0.5">
             <Shield className="w-2.5 h-2.5 text-blue-400" />
-            <p className="text-[10px] text-blue-400 font-medium">Doctor</p>
+            <p className="text-[10px] text-blue-400 font-medium">{user.role}</p>
           </div>
         </div>
         <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.25)' }}>
-          <span className="text-xs font-bold text-blue-400">PS</span>
+          <span className="text-xs font-bold text-blue-400">{getInitials(user.name)}</span>
         </div>
       </div>
     </header>

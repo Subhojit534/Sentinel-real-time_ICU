@@ -1,7 +1,8 @@
 'use client';
 import React, { useState } from 'react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { MOCK_PATIENTS, WARD_ALERT_FREQUENCY, MOCK_WARDS } from '@/lib/mockData';
+import { useSimulation } from '@/providers/SimulationProvider';
+import { WARD_ALERT_FREQUENCY } from '@/lib/mockData';
 import { ArrowLeft, Heart, Droplets, Activity } from 'lucide-react';
 
 const CARD   = 'hsl(222,22%,11%)';
@@ -47,10 +48,33 @@ const VITAL_TABS = [
 
 export default function DashboardCharts({ patientId, onBack }: DashboardChartsProps) {
   const [activeVital, setActiveVital] = useState<'hr' | 'spo2' | 'map'>('hr');
+  const { patients } = useSimulation();
 
-  const selectedPatient = MOCK_PATIENTS.find(p => p.id === patientId) || MOCK_PATIENTS[0];
-  const trendData = selectedPatient.trend;
+  const selectedPatient = patients.find(p => p.id === patientId) || patients[0];
+  if (!selectedPatient) return null;
+
+  const trendData = selectedPatient.trend || [];
   const activeTab = VITAL_TABS.find(t => t.id === activeVital)!;
+
+  // Calculate live ward capacity
+  const liveWards = [
+    { id: 'ward-icu-a', name: 'ICU Alpha', hospitalId: 'hosp-1', totalBeds: 8 },
+    { id: 'ward-icu-b', name: 'ICU Beta', hospitalId: 'hosp-1', totalBeds: 8 },
+    { id: 'ward-icu-c', name: 'ICU Gamma', hospitalId: 'hosp-1', totalBeds: 10 },
+    { id: 'ward-icu-d', name: 'Cardiac ICU', hospitalId: 'hosp-2', totalBeds: 6 },
+    { id: 'ward-icu-e', name: 'Neuro ICU', hospitalId: 'hosp-2', totalBeds: 8 },
+  ].map(w => {
+    const wardPatients = patients.filter(p => p.wardId === w.id);
+    return {
+      ...w,
+      occupiedBeds: wardPatients.length,
+      criticalPatients: wardPatients.filter(p => p.status === 'critical').length
+    };
+  });
+
+  const totalOccupied = liveWards.reduce((sum, w) => sum + w.occupiedBeds, 0);
+  const totalBedsAll = liveWards.reduce((sum, w) => sum + w.totalBeds, 0);
+  const isFull = totalOccupied >= totalBedsAll * 0.9;
 
   return (
     <div className="space-y-5">
@@ -165,8 +189,26 @@ export default function DashboardCharts({ patientId, onBack }: DashboardChartsPr
           </div>
         </div>
 
+        {isFull && (
+          <div className="mb-4 p-3 rounded-xl flex items-center justify-between"
+            style={{ backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)' }}>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-red-500/20 rounded-lg text-red-500">
+                <AlertTriangle className="w-5 h-5 animate-pulse" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-red-400">ICU Capacity Critical ({totalOccupied}/{totalBedsAll} Beds)</p>
+                <p className="text-xs text-red-400/80 mt-0.5">Network overflow threshold reached. Recommend initiating patient transfer protocols to Metro Health Center.</p>
+              </div>
+            </div>
+            <button className="px-4 py-1.5 text-xs font-bold bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20">
+              Initiate Transfer
+            </button>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          {MOCK_WARDS.map((ward: any) => {
+          {liveWards.map((ward: any) => {
             const pct = Math.round((ward.occupiedBeds / ward.totalBeds) * 100);
             const hasCritical = ward.criticalPatients > 0;
             return (

@@ -1,18 +1,16 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AppLayout from '@/components/AppLayout';
-import { MOCK_USERS } from '@/lib/mockData';
 import {
   Settings, User, Bell, Shield, Globe, Moon, Monitor,
   Save, LogOut, ChevronRight, Check, Hospital, Wifi, Brain,
 } from 'lucide-react';
-
+import { getSession, clearSession } from '@/lib/session';
+import { supabase } from '@/lib/supabase';
 const CARD    = 'hsl(222,22%,11%)';
 const BORDER  = 'hsl(220,18%,18%)';
 const MUTED   = 'hsl(215,18%,55%)';
 const SURFACE = 'hsl(220,20%,8%)';
-
-const currentUser = MOCK_USERS[0];
 
 function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -35,15 +33,39 @@ const TABS = [
   { id: 'system',        label: 'System',          icon: Hospital },
 ];
 
+
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('profile');
 
-  // Profile state
-  const [name, setName] = useState(currentUser.name);
-  const [email, setEmail] = useState(currentUser.email);
-  const [role] = useState(currentUser.role);
+  // Load user from session
+  const [name, setName]          = useState('Loading...');
+  const [email, setEmail]        = useState('');
+  const [role, setRole]          = useState('doctor');
   const [specialization, setSpecialization] = useState('Intensive Care Medicine');
-  const [phone, setPhone] = useState('+91 98765 43210');
+  const [licenseNumber, setLicenseNumber]   = useState('—');
+  const [hospitalName, setHospitalName]     = useState('—');
+
+  useEffect(() => {
+    const s = getSession();
+    if (!s) return;
+    setName(s.name);
+    setEmail(s.email);
+    setRole(s.role);
+
+    // Fetch license number + hospital name from DB
+    if (!supabase) return;
+    supabase
+      .from('users')
+      .select('license_number, hospital_id, hospitals(name)')
+      .eq('email', s.email)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!data) return;
+        if (data.license_number) setLicenseNumber(data.license_number);
+        const hosp = (data as any).hospitals;
+        if (hosp?.name) setHospitalName(hosp.name);
+      });
+  }, []);
 
   // Notification settings
   const [notifs, setNotifs] = useState({
@@ -195,15 +217,20 @@ export default function SettingsPage() {
                   <Field label="Specialization">
                     <input value={specialization} onChange={(e) => setSpecialization(e.target.value)} style={inputStyle} />
                   </Field>
-                  <Field label="Phone Number">
-                    <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" style={inputStyle} />
+                  <Field label="License / Registration No.">
+                    <input
+                      value={licenseNumber}
+                      onChange={(e) => setLicenseNumber(e.target.value)}
+                      placeholder="e.g. MCI-2019-12345"
+                      style={{ ...inputStyle, fontFamily: 'monospace', letterSpacing: '0.04em' }}
+                    />
                   </Field>
                   <Field label="Role">
                     <input value={role.charAt(0).toUpperCase() + role.slice(1)} disabled
                       style={{ ...inputStyle, opacity: 0.6, cursor: 'not-allowed' }} />
                   </Field>
                   <Field label="Hospital">
-                    <input value="City General Hospital" disabled
+                    <input value={hospitalName} disabled
                       style={{ ...inputStyle, opacity: 0.6, cursor: 'not-allowed' }} />
                   </Field>
                 </div>
@@ -217,7 +244,7 @@ export default function SettingsPage() {
                     <p className="text-xs mt-0.5" style={{ color: MUTED }}>You will need to log in again to access the dashboard</p>
                   </div>
                   <button
-                    onClick={() => window.location.href = '/sign-up-login-screen'}
+                    onClick={() => { clearSession(); window.location.href = '/sign-up-login-screen'; }}
                     className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-red-400 transition-all hover:opacity-80"
                     style={{ backgroundColor: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)' }}>
                     <LogOut className="w-3.5 h-3.5" />

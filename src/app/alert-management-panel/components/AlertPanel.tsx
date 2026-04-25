@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useMemo, useEffect } from 'react';
+import { useSimulation } from '@/providers/SimulationProvider';
 import { api } from '@/lib/api';
 import type { Alert, AlertSeverity, AlertStatus } from '@/lib/types';
 import { AlertSeverityBadge, AlertStatusBadge } from '@/components/ui/StatusBadge';
@@ -48,30 +49,15 @@ export default function AlertPanel() {
   const [sortDir,        setSortDir]        = useState<SortDir>('desc');
   const [selectedIds,    setSelectedIds]    = useState<Set<string>>(new Set());
   const [selectedAlert,  setSelectedAlert]  = useState<Alert | null>(null);
-  const [alerts,         setAlerts]         = useState<Alert[]>([]);
   const [drawerOpen,     setDrawerOpen]     = useState(false);
-  const [loading,        setLoading]        = useState(true);
-
-  const fetchAlerts = async () => {
-    try {
-      const data = await api.alerts.list();
-      setAlerts(data);
-      if (data.length > 0 && !selectedAlert) {
-        setSelectedAlert(data[0]);
-        setDrawerOpen(true);
-      }
-    } catch (err) {
-      console.error('Failed to load alerts', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { alerts, loading: simLoading } = useSimulation();
 
   useEffect(() => {
-    fetchAlerts();
-    const interval = setInterval(fetchAlerts, 15000);
-    return () => clearInterval(interval);
-  }, []);
+    if (!simLoading && alerts.length > 0 && !selectedAlert) {
+      setSelectedAlert(alerts[0]);
+      setDrawerOpen(true);
+    }
+  }, [alerts, simLoading, selectedAlert]);
 
   const wards = Array.from(new Set(alerts.map((a) => a.wardId))).map((id) => ({
     id, name: alerts.find((a) => a.wardId === id)?.wardName ?? id,
@@ -124,10 +110,6 @@ export default function AlertPanel() {
     try {
       const updates = Array.from(selectedIds).map(id => api.alerts.update(id, { status: 'acknowledged' }));
       await Promise.all(updates);
-      setAlerts((prev) => prev.map((a) =>
-        selectedIds.has(a.id) && a.status === 'active'
-          ? { ...a, status: 'acknowledged' as AlertStatus, acknowledgedAt: new Date().toISOString() } : a
-      ));
       toast.success(`${selectedIds.size} alert${selectedIds.size > 1 ? 's' : ''} acknowledged`);
       setSelectedIds(new Set());
     } catch (err) {
@@ -139,10 +121,6 @@ export default function AlertPanel() {
     try {
       const updates = Array.from(selectedIds).map(id => api.alerts.update(id, { status: 'resolved' }));
       await Promise.all(updates);
-      setAlerts((prev) => prev.map((a) =>
-        selectedIds.has(a.id)
-          ? { ...a, status: 'resolved' as AlertStatus, resolvedAt: new Date().toISOString() } : a
-      ));
       toast.success(`${selectedIds.size} alert${selectedIds.size > 1 ? 's' : ''} resolved`);
       setSelectedIds(new Set());
     } catch (err) {
@@ -153,9 +131,6 @@ export default function AlertPanel() {
   const handleStatusChange = async (id: string, newStatus: AlertStatus) => {
     try {
       await api.alerts.update(id, { status: newStatus });
-      setAlerts((prev) => prev.map((a) =>
-        a.id === id ? { ...a, status: newStatus, [newStatus === 'acknowledged' ? 'acknowledgedAt' : newStatus === 'resolved' ? 'resolvedAt' : '']: new Date().toISOString() } : a
-      ));
       toast.success(`Alert marked as ${newStatus}`);
     } catch (err) {
       toast.error(`Failed to mark alert as ${newStatus}`);
@@ -378,8 +353,8 @@ export default function AlertPanel() {
                         <p className="text-sm font-semibold text-white whitespace-nowrap">{alert.patientName}</p>
                       </td>
                       <td className="px-3 py-3.5">
-                        <p className="text-xs font-mono text-white">{alert.bedId.toUpperCase()}</p>
-                        <p className="text-[10px]" style={{ color: MUTED }}>{alert.wardName}</p>
+                        <p className="text-xs font-mono text-white">{alert.bedId ? alert.bedId.toUpperCase() : '—'}</p>
+                        <p className="text-[10px]" style={{ color: MUTED }}>{alert.wardName || alert.wardId || '—'}</p>
                       </td>
                       <td className="px-3 py-3.5">
                         <p className="text-xs font-medium text-white whitespace-nowrap">{alert.type}</p>

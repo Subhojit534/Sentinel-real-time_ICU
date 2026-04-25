@@ -1,9 +1,14 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Loader2, UserPlus, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
+
+// Dark background hex for <option> elements (Tailwind classes don't apply to options)
+const SELECT_BG = '#141b2d';
+const SELECT_COLOR = '#e2e8f0';
 
 interface SignUpFormData {
   firstName: string;
@@ -27,7 +32,29 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [hospitals, setHospitals] = useState<{ id: string; name: string }[]>([
+    { id: 'hosp-1', name: 'Metro Health Center' },
+    { id: 'hosp-2', name: 'City General Hospital' },
+  ]);
+  const [wards, setWards] = useState<{ id: string; name: string }[]>([
+    { id: 'ward-icu-a', name: 'ICU Alpha' },
+    { id: 'ward-icu-b', name: 'ICU Beta' },
+    { id: 'ward-icu-c', name: 'ICU Gamma' },
+    { id: 'ward-icu-d', name: 'Cardiac ICU' },
+    { id: 'ward-icu-e', name: 'Neuro ICU' },
+  ]);
   const router = useRouter();
+
+  // Load hospitals and wards from Supabase
+  useEffect(() => {
+    if (!supabase) return;
+    supabase.from('hospitals').select('id, name').then(({ data }) => {
+      if (data && data.length > 0) setHospitals(data);
+    });
+    supabase.from('wards').select('id, name').then(({ data }) => {
+      if (data && data.length > 0) setWards(data);
+    });
+  }, []);
 
   const {
     register,
@@ -41,8 +68,35 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
 
   const onSubmit = async (data: SignUpFormData) => {
     setIsLoading(true);
-    await new Promise((r) => setTimeout(r, 1400));
-    toast.success('Account created. Pending administrator approval.');
+    
+    if (supabase) {
+      const id = `usr-${crypto.randomUUID().slice(0, 8)}`;
+      // Map roles to what the schema expects
+      let mappedRole = 'doctor';
+      if (data.role === 'admin') mappedRole = 'admin';
+      if (data.role.includes('nurse')) mappedRole = 'nurse';
+
+      const { error } = await supabase.from('users').insert({
+        id,
+        name: `${data.firstName} ${data.lastName}`,
+        role: mappedRole,
+        hospital_id: data.hospital || 'hosp-1',
+        ward_id: data.ward || 'ward-icu-a',
+        email: data.email,
+        password: data.password, // plain text for demo purposes
+        license_number: data.licenseNumber || null,
+      });
+
+      if (error) {
+        toast.error(`Error creating account: ${error.message}`);
+        setIsLoading(false);
+        return;
+      }
+    } else {
+      await new Promise((r) => setTimeout(r, 1400));
+    }
+    
+    toast.success('Account created successfully! You can now sign in.');
     setIsLoading(false);
     setTimeout(() => onSwitchToLogin(), 1500);
   };
@@ -109,14 +163,15 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
             <select
               id="role"
               {...register('role', { required: 'Select your role' })}
-              className={`w-full appearance-none bg-white/5 border rounded-lg px-4 py-2.5 text-sm text-foreground outline-none focus:border-cyan-500/50 transition-all cursor-pointer pr-8 ${errors.role ? 'border-red-500/50' : 'border-border'}`}
+              style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}
+              className={`w-full appearance-none border rounded-lg px-4 py-2.5 text-sm outline-none focus:border-cyan-500/50 transition-all cursor-pointer pr-8 ${errors.role ? 'border-red-500/50' : 'border-border'}`}
             >
-              <option value="">Select role...</option>
-              <option value="doctor">Attending Physician</option>
-              <option value="registrar">Senior Registrar</option>
-              <option value="nurse">ICU Nurse</option>
-              <option value="nurse_charge">Charge Nurse</option>
-              <option value="admin">ICU Administrator</option>
+              <option value="" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>Select role...</option>
+              <option value="doctor" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>Attending Physician</option>
+              <option value="registrar" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>Senior Registrar</option>
+              <option value="nurse" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>ICU Nurse</option>
+              <option value="nurse_charge" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>Charge Nurse</option>
+              <option value="admin" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>ICU Administrator</option>
             </select>
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
           </div>
@@ -149,12 +204,13 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
               <select
                 id="hospital"
                 {...register('hospital', { required: 'Select hospital' })}
-                className={`w-full appearance-none bg-white/5 border rounded-lg px-3 py-2.5 text-sm text-foreground outline-none focus:border-cyan-500/50 transition-all cursor-pointer pr-7 ${errors.hospital ? 'border-red-500/50' : 'border-border'}`}
+                style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}
+                className={`w-full appearance-none border rounded-lg px-3 py-2.5 text-sm outline-none focus:border-cyan-500/50 transition-all cursor-pointer pr-7 ${errors.hospital ? 'border-red-500/50' : 'border-border'}`}
               >
-                <option value="">Select...</option>
-                <option value="hosp-1">Sentinel General Hospital</option>
-                <option value="hosp-2">Sentinel Cardiac Centre</option>
-                <option value="hosp-3">Sentinel Neuro Institute</option>
+                <option value="" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>Select...</option>
+                {hospitals.map(h => (
+                  <option key={h.id} value={h.id} style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>{h.name}</option>
+                ))}
               </select>
               <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
             </div>
@@ -166,14 +222,13 @@ export default function SignUpForm({ onSwitchToLogin }: Props) {
               <select
                 id="ward"
                 {...register('ward', { required: 'Select ward' })}
-                className={`w-full appearance-none bg-white/5 border rounded-lg px-3 py-2.5 text-sm text-foreground outline-none focus:border-cyan-500/50 transition-all cursor-pointer pr-7 ${errors.ward ? 'border-red-500/50' : 'border-border'}`}
+                style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}
+                className={`w-full appearance-none border rounded-lg px-3 py-2.5 text-sm outline-none focus:border-cyan-500/50 transition-all cursor-pointer pr-7 ${errors.ward ? 'border-red-500/50' : 'border-border'}`}
               >
-                <option value="">Select...</option>
-                <option value="ward-icu-a">ICU Alpha</option>
-                <option value="ward-icu-b">ICU Beta</option>
-                <option value="ward-icu-c">ICU Gamma</option>
-                <option value="ward-icu-d">Cardiac ICU</option>
-                <option value="ward-icu-e">Neuro ICU</option>
+                <option value="" style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>Select...</option>
+                {wards.map(w => (
+                  <option key={w.id} value={w.id} style={{ backgroundColor: SELECT_BG, color: SELECT_COLOR }}>{w.name}</option>
+                ))}
               </select>
               <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
             </div>

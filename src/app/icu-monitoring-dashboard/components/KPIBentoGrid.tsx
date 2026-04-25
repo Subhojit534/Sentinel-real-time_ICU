@@ -1,6 +1,6 @@
 'use client';
-import React, { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
+import React, { useMemo } from 'react';
+import { useSimulation } from '@/providers/SimulationProvider';
 import {
   AlertTriangle, HeartPulse, Droplets,
   BedDouble, Activity, Brain,
@@ -8,24 +8,51 @@ import {
 } from 'lucide-react';
 
 export default function KPIBentoGrid() {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { patients, alerts, loading } = useSimulation();
 
-  useEffect(() => {
-    const fetchKPIs = async () => {
-      try {
-        const kpis = await api.dashboard.kpis();
-        setData(kpis);
-      } catch (err) {
-        console.error('Failed to load KPIs', err);
-      } finally {
-        setLoading(false);
+  const data = useMemo(() => {
+    if (!patients.length) return null;
+
+    const criticalPatients = patients.filter(p => p.status === 'critical').length;
+    const activeAlerts = alerts.filter(a => a.status === 'active' || a.status === 'escalated');
+    const unacknowledgedAlerts = alerts.filter(a => a.status === 'active').length;
+    
+    let totalSpo2 = 0;
+    let totalMap = 0;
+    let lowSpo2Count = 0;
+    let hypotensiveCount = 0;
+    let highAiRiskCount = 0;
+
+    patients.forEach(p => {
+      if (p.vitals) {
+        totalSpo2 += p.vitals.spo2;
+        totalMap += p.vitals.map;
+        if (p.vitals.spo2 < 94) lowSpo2Count++;
+        if (p.vitals.map < 65) hypotensiveCount++;
       }
+      if (p.aiRiskScore > 50) highAiRiskCount++;
+    });
+
+    const avgSpo2 = Math.round(totalSpo2 / patients.length);
+    const avgMap = Math.round(totalMap / patients.length);
+    const occupiedBeds = patients.length;
+    const totalBeds = 40; // mock total
+    const bedOccupancyPct = Math.round((occupiedBeds / totalBeds) * 100);
+
+    return {
+      criticalPatients,
+      activeAlerts: activeAlerts.length,
+      unacknowledgedAlerts,
+      avgSpo2,
+      lowSpo2Count,
+      bedOccupancyPct,
+      occupiedBeds,
+      totalBeds,
+      avgMap,
+      hypotensiveCount,
+      highAiRiskCount
     };
-    fetchKPIs();
-    const interval = setInterval(fetchKPIs, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  }, [patients, alerts]);
 
   if (loading || !data) {
     return <div className="animate-pulse h-24 bg-white/5 rounded-2xl w-full"></div>;

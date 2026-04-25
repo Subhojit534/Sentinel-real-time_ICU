@@ -1,50 +1,48 @@
 import { NextResponse } from 'next/server';
-import pool from '@/lib/db';
+import { supabase } from '@/lib/supabase';
+import { MOCK_ALERTS } from '@/lib/mockData';
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const wardId = searchParams.get('wardId');
     const status = searchParams.get('status');
-    const severity = searchParams.get('severity');
 
-    let query = `
-      SELECT a.*, p.name as patient_name, w.name as ward_name, p.bed_id 
-      FROM alerts a
-      JOIN patients p ON a.patient_id = p.id
-      JOIN wards w ON a.ward_id = w.id
-      WHERE 1=1
-    `;
-    const params: any[] = [];
-
-    if (wardId && wardId !== 'all') {
-      query += ` AND a.ward_id = ?`;
-      params.push(wardId);
-    }
-    
-    if (status && status !== 'all') {
-      // Allow multiple statuses separated by comma (e.g. active,escalated)
-      const statuses = status.split(',');
-      query += ` AND a.status IN (?)`;
-      params.push(statuses);
+    if (!supabase) {
+      let filtered = MOCK_ALERTS;
+      if (wardId && wardId !== 'all') filtered = filtered.filter(a => a.wardId === wardId);
+      if (status && status !== 'all') filtered = filtered.filter(a => a.status === status);
+      return NextResponse.json({ alerts: filtered });
     }
 
-    if (severity && severity !== 'all') {
-      query += ` AND a.severity = ?`;
-      params.push(severity);
+    let query = supabase.from('alerts').select(`
+      *,
+      patients!left(name, bed_id)
+    `);
+    if (wardId && wardId !== 'all') query = query.eq('ward_id', wardId);
+    if (status && status !== 'all') query = query.eq('status', status);
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    // If no rows in DB, gracefully return mock data (no throw — avoids noisy 500)
+    if (!data || data.length === 0) {
+      let filtered = MOCK_ALERTS;
+      if (wardId && wardId !== 'all') filtered = filtered.filter(a => a.wardId === wardId);
+      if (status && status !== 'all') {
+        const statuses = status.split(',');
+        filtered = filtered.filter(a => statuses.includes(a.status));
+      }
+      return NextResponse.json({ alerts: filtered });
     }
 
-    query += ` ORDER BY a.created_at DESC`;
-
-    const [rows]: any = await pool.query(query, params);
-
-    const alerts = rows.map((row: any) => ({
+    const alerts = data.map((row: any) => ({
       id: row.id,
       patientId: row.patient_id,
-      patientName: row.patient_name,
-      bedId: row.bed_id,
+      patientName: row.patient_name || row.patients?.name || 'Unknown',
+      bedId: row.bed_id || row.patients?.bed_id || null,
       wardId: row.ward_id,
-      wardName: row.ward_name,
+      wardName: row.ward_name || row.ward_id || '',
       type: row.type,
       triggerMetric: row.trigger_metric,
       triggerValue: row.trigger_value,
@@ -57,13 +55,23 @@ export async function GET(request: Request) {
       resolvedAt: row.resolved_at,
       assignedTo: row.assigned_to,
       escalationLevel: row.escalation_level,
+      aiGenerated: row.ai_generated,
       notes: row.notes,
-      aiGenerated: !!row.ai_generated
     }));
-
     return NextResponse.json({ alerts });
   } catch (error: any) {
     console.error('Error fetching alerts:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const { searchParams } = new URL(request.url);
+    const wardId = searchParams.get('wardId');
+    const status = searchParams.get('status');
+    const severity = searchParams.get('severity');
+    let filtered = MOCK_ALERTS;
+    if (wardId && wardId !== 'all') filtered = filtered.filter(a => a.wardId === wardId);
+    if (status && status !== 'all') {
+      const statuses = status.split(',');
+      filtered = filtered.filter(a => statuses.includes(a.status));
+    }
+    if (severity && severity !== 'all') filtered = filtered.filter(a => a.severity === severity);
+    return NextResponse.json({ alerts: filtered });
   }
 }

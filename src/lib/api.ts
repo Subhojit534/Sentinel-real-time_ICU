@@ -27,7 +27,28 @@ export const api = {
     getVitalsTrend: async (patientId: string, rangeHours = 24): Promise<Patient['trend']> => {
       const data = await fetcher<{ trend: Patient['trend'] }>(`/api/patients/${patientId}/vitals?range=${rangeHours}`);
       return data.trend;
-    }
+    },
+    allocate: async (payload: {
+      name: string;
+      age?: number;
+      gender?: string;
+      bedId: string;
+      wardId: string;
+      diagnosis: string;
+      status?: string;
+      attendingPhysician?: string;
+      primaryNurse?: string;
+    }): Promise<{ success: boolean; patientId: string }> => {
+      return fetcher<{ success: boolean; patientId: string }>('/api/patients', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+    },
+    discharge: async (patientId: string): Promise<{ success: boolean; freedBedId: string }> => {
+      return fetcher<{ success: boolean; freedBedId: string }>(`/api/patients/${patientId}`, {
+        method: 'DELETE',
+      });
+    },
   },
   alerts: {
     list: async (params?: { wardId?: string; status?: string; severity?: string }): Promise<Alert[]> => {

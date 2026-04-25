@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { api } from '@/lib/api';
+import { useSimulation } from '@/providers/SimulationProvider';
 import { PatientStatusBadge } from '@/components/ui/StatusBadge';
 import NEWS2Badge from '@/components/ui/NEWS2Badge';
 import AIRiskBadge from '@/components/ui/AIRiskBadge';
@@ -20,7 +20,7 @@ interface VitalPillProps {
 function VitalPill({ value, unit, alert }: VitalPillProps) {
   return (
     <span
-      className="inline-flex items-baseline gap-0.5 px-2 py-0.5 rounded-md text-xs font-mono font-semibold tabular-nums"
+      className={`inline-flex items-baseline gap-0.5 px-2 py-0.5 rounded-md text-xs font-mono font-semibold tabular-nums ${alert ? 'animate-pulse' : ''}`}
       style={{
         backgroundColor: alert ? 'rgba(239,68,68,0.10)' : 'transparent',
         color: alert ? '#f87171' : 'hsl(210,30%,94%)',
@@ -48,24 +48,7 @@ const rowLeftBorder = (p: Patient) => {
 export default function PatientVitalsGrid({ onSelectPatient }: PatientVitalsGridProps) {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [wardFilter, setWardFilter]     = useState<string>('all');
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  React.useEffect(() => {
-    const fetchPatients = async () => {
-      try {
-        const data = await api.patients.list();
-        setPatients(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPatients();
-    const interval = setInterval(fetchPatients, 10000);
-    return () => clearInterval(interval);
-  }, []);
+  const { patients, loading } = useSimulation();
 
   const filtered = patients.filter((p) => {
     const statusOk = statusFilter === 'all' || p.status === statusFilter;
