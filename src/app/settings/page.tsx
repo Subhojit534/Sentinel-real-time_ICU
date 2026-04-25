@@ -403,7 +403,6 @@ export default function SettingsPage() {
               <Section title="Delivery Channels">
                 <div className="-my-2">
                   <NotifRow label="Email Notifications" desc={`Sent to ${email}`} k="emailNotifs" />
-                  <NotifRow label="SMS Notifications" desc={`Sent to ${phone}`} k="smsNotifs" />
                 </div>
               </Section>
             </div>

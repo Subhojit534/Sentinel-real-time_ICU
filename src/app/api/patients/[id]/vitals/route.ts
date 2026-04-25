@@ -3,8 +3,8 @@ import { supabase } from '@/lib/supabase';
 import { MOCK_PATIENTS } from '@/lib/mockData';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
-    const { id } = await params;
 
     if (!supabase) {
       // Return a mocked trend for the demo
