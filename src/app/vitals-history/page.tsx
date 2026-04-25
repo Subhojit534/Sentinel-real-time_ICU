@@ -1,7 +1,7 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AppLayout from '@/components/AppLayout';
-import { MOCK_PATIENTS } from '@/lib/mockData';
+import { api } from '@/lib/api';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine,
@@ -48,11 +48,56 @@ function CTooltip({ active, payload, label }: CTooltipProps) {
 }
 
 export default function VitalsHistoryPage() {
-  const [selectedPatient, setSelectedPatient] = useState(MOCK_PATIENTS[0]);
+  const [patients, setPatients] = useState<any[]>([]);
+  const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [timeRange, setTimeRange] = useState<'6h' | '12h' | '24h'>('24h');
+  const [trendData, setTrendData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const pts = await api.patients.list();
+        setPatients(pts);
+        if (pts.length > 0) {
+          setSelectedPatient(pts[0]);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    init();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedPatient) return;
+    const fetchTrend = async () => {
+      try {
+        const hours = timeRange === '6h' ? 6 : timeRange === '12h' ? 12 : 24;
+        const trend = await api.patients.getVitalsTrend(selectedPatient.id, hours);
+        setTrendData(trend);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchTrend();
+    const interval = setInterval(fetchTrend, 30000);
+    return () => clearInterval(interval);
+  }, [selectedPatient, timeRange]);
 
   const rangePoints = timeRange === '6h' ? 6 : timeRange === '12h' ? 12 : 24;
-  const trendData = selectedPatient.trend.slice(-rangePoints);
+
+  if (loading || !selectedPatient) {
+    return (
+      <AppLayout>
+        <div className="h-full flex items-center justify-center">
+          <div className="animate-pulse h-8 w-32 bg-white/10 rounded-lg"></div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -89,11 +134,11 @@ export default function VitalsHistoryPage() {
               <div className="relative">
                 <select
                   value={selectedPatient.id}
-                  onChange={(e) => setSelectedPatient(MOCK_PATIENTS.find((p) => p.id === e.target.value)!)}
+                  onChange={(e) => setSelectedPatient(patients.find((p) => p.id === e.target.value)!)}
                   className="text-xs rounded-xl pl-3 pr-8 py-2 outline-none appearance-none"
                   style={{ backgroundColor: CARD, border: `1px solid ${BORDER}`, color: 'hsl(210,30%,94%)', minWidth: 200 }}
                 >
-                  {MOCK_PATIENTS.map((p) => (
+                  {patients.map((p) => (
                     <option key={p.id} value={p.id}>{p.name} — {p.bedId.toUpperCase()}</option>
                   ))}
                 </select>
@@ -106,7 +151,7 @@ export default function VitalsHistoryPage() {
           <div className="flex items-center gap-5 p-4 rounded-2xl border" style={{ backgroundColor: CARD, borderColor: BORDER }}>
             <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-base flex-shrink-0"
               style={{ backgroundColor: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.25)', color: '#60A5FA' }}>
-              {selectedPatient.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+              {selectedPatient.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-base font-bold text-white">{selectedPatient.name}</p>

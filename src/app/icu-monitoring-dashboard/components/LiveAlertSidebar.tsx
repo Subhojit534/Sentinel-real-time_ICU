@@ -1,6 +1,7 @@
 'use client';
-import React, { useState } from 'react';
-import { MOCK_ALERTS } from '@/lib/mockData';
+import React, { useState, useEffect } from 'react';
+import { api } from '@/lib/api';
+import type { Alert } from '@/lib/types';
 import { AlertSeverityBadge, AlertStatusBadge } from '@/components/ui/StatusBadge';
 import { BellRing, ChevronRight, Brain, Clock, X } from 'lucide-react';
 import Link from 'next/link';
@@ -9,8 +10,6 @@ const CARD   = 'hsl(222,22%,11%)';
 const BORDER = 'hsl(220,18%,18%)';
 const MUTED  = 'hsl(215,18%,55%)';
 const SURFACE = 'hsl(220,20%,8%)';
-
-const ACTIVE_ALERTS = MOCK_ALERTS.filter((a) => a.status === 'active' || a.status === 'escalated');
 
 function timeAgo(isoString: string): string {
   const diff = Math.floor((Date.now() - new Date(isoString).getTime()) / 1000 / 60);
@@ -27,8 +26,24 @@ const severityBorderColor = (severity: string) => {
 };
 
 export default function LiveAlertSidebar() {
+  const [alerts, setAlerts] = useState<Alert[]>([]);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
-  const visible = ACTIVE_ALERTS.filter((a) => !dismissed.has(a.id));
+
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      try {
+        const data = await api.alerts.list({ status: 'active,escalated' });
+        setAlerts(data);
+      } catch (err) {
+        console.error('Failed to fetch live alerts', err);
+      }
+    };
+    fetchAlerts();
+    const interval = setInterval(fetchAlerts, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const visible = alerts.filter((a) => !dismissed.has(a.id));
 
   return (
     <aside className="w-80 flex-shrink-0 flex flex-col h-full overflow-hidden"

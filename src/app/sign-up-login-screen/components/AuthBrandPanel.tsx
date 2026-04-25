@@ -220,6 +220,10 @@ export default function AuthBrandPanel() {
             };
         }
 
+        function getAxisValue(vec: THREE.Vector3, axis: 'x' | 'y' | 'z'): number {
+            return vec[axis] as number;
+        }
+
         function applyMoveInstantly(move: any) {
             const eps = 0.1;
             const affectedCubies = [];
@@ -227,7 +231,7 @@ export default function AuthBrandPanel() {
             for (let i = mainGroup.children.length - 1; i >= 0; i--) {
                 const child = mainGroup.children[i];
                 if (cubies.includes(child as THREE.Mesh)) {
-                    if (Math.abs(child.position[move.axis as keyof THREE.Vector3] - (move.layer * spacing)) < eps) {
+                    if (Math.abs(getAxisValue(child.position, move.axis) - (move.layer * spacing)) < eps) {
                         affectedCubies.push(child);
                         pivot.attach(child);
                     }
@@ -392,7 +396,7 @@ export default function AuthBrandPanel() {
                     for (let i = mainGroup.children.length - 1; i >= 0; i--) {
                         const child = mainGroup.children[i];
                         if (cubies.includes(child as THREE.Mesh)) {
-                            if (Math.abs(child.position[currentMove.axis as keyof THREE.Vector3] - (currentMove.layer * spacing)) < eps) {
+                            if (Math.abs(getAxisValue(child.position, currentMove.axis) - (currentMove.layer * spacing)) < eps) {
                                 pivot.attach(child);
                             }
                         }

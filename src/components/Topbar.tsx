@@ -12,8 +12,9 @@ const WARDS = [
 ];
 
 function LiveClock() {
-  const [time, setTime] = React.useState(() => new Date().toLocaleTimeString('en-GB'));
+  const [time, setTime] = React.useState('');
   React.useEffect(() => {
+    setTime(new Date().toLocaleTimeString('en-GB'));
     const id = setInterval(() => setTime(new Date().toLocaleTimeString('en-GB')), 1000);
     return () => clearInterval(id);
   }, []);

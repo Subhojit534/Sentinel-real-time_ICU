@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import AppLayout from '@/components/AppLayout';
-import { MOCK_WARDS, MOCK_PATIENTS } from '@/lib/mockData';
+import { api } from '@/lib/api';
 import { PatientStatusBadge } from '@/components/ui/StatusBadge';
 import { BedDouble, Users, AlertTriangle, CheckCircle2, Wrench, ChevronRight, Filter } from 'lucide-react';
 
@@ -30,16 +30,36 @@ const bedColor: Record<BedStatus, { bg: string; border: string; label: string }>
 export default function BedManagementPage() {
   const [wardFilter, setWardFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [wards, setWards] = useState<any[]>([]);
+  const [patients, setPatients] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [w, p] = await Promise.all([api.wards.list(), api.patients.list()]);
+        setWards(w);
+        setPatients(p);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+    const interval = setInterval(fetchData, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Build a full bed map: for each ward, each bed slot
-  const allBeds = MOCK_WARDS.flatMap((ward) =>
+  const allBeds = wards.flatMap((ward) =>
     Array.from({ length: ward.totalBeds }, (_, i) => {
       const bedId = `${ward.id.replace('ward-icu-', 'bed-').replace('-', '')}-${String(i + 1).padStart(2, '0')}`;
-      const patient = MOCK_PATIENTS.find((p) => p.wardId === ward.id && p.bedId === bedId) ||
-        MOCK_PATIENTS.find((p) => p.wardId === ward.id)
+      const patient = patients.find((p) => p.wardId === ward.id && p.bedId === bedId) ||
+        patients.find((p) => p.wardId === ward.id)
         // Assign patients to first N beds
-        && i < MOCK_PATIENTS.filter((p) => p.wardId === ward.id).length
-        ? MOCK_PATIENTS.filter((p) => p.wardId === ward.id)[i]
+        && i < patients.filter((p) => p.wardId === ward.id).length
+        ? patients.filter((p) => p.wardId === ward.id)[i]
         : undefined;
 
       const status: BedStatus = i < ward.occupiedBeds
@@ -65,6 +85,16 @@ export default function BedManagementPage() {
     critical:  allBeds.filter((b) => b.status === 'occupied_critical').length,
   };
 
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="h-full flex items-center justify-center">
+          <div className="animate-pulse h-8 w-32 bg-white/10 rounded-lg"></div>
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
       <div className="h-full overflow-y-auto scrollbar-thin">
@@ -75,7 +105,7 @@ export default function BedManagementPage() {
             <div>
               <h1 className="text-xl font-bold text-white tracking-tight">Bed Management</h1>
               <p className="text-xs mt-0.5" style={{ color: MUTED }}>
-                {stats.total} beds across {MOCK_WARDS.length} wards · real-time occupancy
+                {stats.total} beds across {wards.length} wards · real-time occupancy
               </p>
             </div>
           </div>
@@ -128,12 +158,12 @@ export default function BedManagementPage() {
               className="text-xs rounded-xl px-3 py-2 outline-none"
               style={{ backgroundColor: CARD, border: `1px solid ${BORDER}`, color: 'hsl(210,30%,94%)' }}>
               <option value="all">All Wards</option>
-              {MOCK_WARDS.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
+              {wards.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
             </select>
           </div>
 
           {/* Ward sections */}
-          {MOCK_WARDS.filter((w) => wardFilter === 'all' || w.id === wardFilter).map((ward) => {
+          {wards.filter((w) => wardFilter === 'all' || w.id === wardFilter).map((ward) => {
             const wardBeds = filteredBeds.filter((b) => b.wardId === ward.id);
             if (wardBeds.length === 0) return null;
             const pct = Math.round((ward.occupiedBeds / ward.totalBeds) * 100);

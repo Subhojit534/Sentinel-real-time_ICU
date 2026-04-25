@@ -1,6 +1,6 @@
 'use client';
-import React, { useState, useMemo } from 'react';
-import { MOCK_ALERTS } from '@/lib/mockData';
+import React, { useState, useMemo, useEffect } from 'react';
+import { api } from '@/lib/api';
 import type { Alert, AlertSeverity, AlertStatus } from '@/lib/types';
 import { AlertSeverityBadge, AlertStatusBadge } from '@/components/ui/StatusBadge';
 import NEWS2Badge from '@/components/ui/NEWS2Badge';
@@ -23,6 +23,7 @@ type SortDir = 'asc' | 'desc';
 const SEVERITY_ORDER: Record<AlertSeverity, number> = { critical: 4, high: 3, moderate: 2, low: 1 };
 
 function timeAgo(iso: string): string {
+  if (!iso) return '';
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000 / 60);
   if (diff < 1) return 'just now';
   if (diff < 60) return `${diff}m ago`;
@@ -46,12 +47,34 @@ export default function AlertPanel() {
   const [sortKey,        setSortKey]        = useState<SortKey>('createdAt');
   const [sortDir,        setSortDir]        = useState<SortDir>('desc');
   const [selectedIds,    setSelectedIds]    = useState<Set<string>>(new Set());
-  const [selectedAlert,  setSelectedAlert]  = useState<Alert | null>(MOCK_ALERTS[0]);
-  const [alerts,         setAlerts]         = useState<Alert[]>(MOCK_ALERTS);
-  const [drawerOpen,     setDrawerOpen]     = useState(true);
+  const [selectedAlert,  setSelectedAlert]  = useState<Alert | null>(null);
+  const [alerts,         setAlerts]         = useState<Alert[]>([]);
+  const [drawerOpen,     setDrawerOpen]     = useState(false);
+  const [loading,        setLoading]        = useState(true);
 
-  const wards = Array.from(new Set(MOCK_ALERTS.map((a) => a.wardId))).map((id) => ({
-    id, name: MOCK_ALERTS.find((a) => a.wardId === id)?.wardName ?? id,
+  const fetchAlerts = async () => {
+    try {
+      const data = await api.alerts.list();
+      setAlerts(data);
+      if (data.length > 0 && !selectedAlert) {
+        setSelectedAlert(data[0]);
+        setDrawerOpen(true);
+      }
+    } catch (err) {
+      console.error('Failed to load alerts', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAlerts();
+    const interval = setInterval(fetchAlerts, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const wards = Array.from(new Set(alerts.map((a) => a.wardId))).map((id) => ({
+    id, name: alerts.find((a) => a.wardId === id)?.wardName ?? id,
   }));
 
   const filtered = useMemo(() => {
@@ -97,38 +120,46 @@ export default function AlertPanel() {
     });
   };
 
-  const bulkAcknowledge = () => {
-    setAlerts((prev) => prev.map((a) =>
-      selectedIds.has(a.id) && a.status === 'active'
-        ? { ...a, status: 'acknowledged' as AlertStatus, acknowledgedAt: new Date().toISOString() } : a
-    ));
-    toast.success(`${selectedIds.size} alert${selectedIds.size > 1 ? 's' : ''} acknowledged`);
-    setSelectedIds(new Set());
-  };
-
-  const bulkResolve = () => {
-    setAlerts((prev) => prev.map((a) =>
-      selectedIds.has(a.id)
-        ? { ...a, status: 'resolved' as AlertStatus, resolvedAt: new Date().toISOString() } : a
-    ));
-    toast.success(`${selectedIds.size} alert${selectedIds.size > 1 ? 's' : ''} resolved`);
-    setSelectedIds(new Set());
-  };
-
-  const handleStatusChange = (alertId: string, newStatus: AlertStatus) => {
-    setAlerts((prev) => prev.map((a) =>
-      a.id === alertId
-        ? {
-            ...a, status: newStatus,
-            acknowledgedAt: newStatus === 'acknowledged' ? new Date().toISOString() : a.acknowledgedAt,
-            resolvedAt:     newStatus === 'resolved'     ? new Date().toISOString() : a.resolvedAt,
-          }
-        : a
-    ));
-    if (selectedAlert?.id === alertId) {
-      setSelectedAlert((prev) => prev ? { ...prev, status: newStatus } : null);
+  const bulkAcknowledge = async () => {
+    try {
+      const updates = Array.from(selectedIds).map(id => api.alerts.update(id, { status: 'acknowledged' }));
+      await Promise.all(updates);
+      setAlerts((prev) => prev.map((a) =>
+        selectedIds.has(a.id) && a.status === 'active'
+          ? { ...a, status: 'acknowledged' as AlertStatus, acknowledgedAt: new Date().toISOString() } : a
+      ));
+      toast.success(`${selectedIds.size} alert${selectedIds.size > 1 ? 's' : ''} acknowledged`);
+      setSelectedIds(new Set());
+    } catch (err) {
+      toast.error('Failed to acknowledge alerts');
     }
-    toast.success(`Alert ${newStatus}`);
+  };
+
+  const bulkResolve = async () => {
+    try {
+      const updates = Array.from(selectedIds).map(id => api.alerts.update(id, { status: 'resolved' }));
+      await Promise.all(updates);
+      setAlerts((prev) => prev.map((a) =>
+        selectedIds.has(a.id)
+          ? { ...a, status: 'resolved' as AlertStatus, resolvedAt: new Date().toISOString() } : a
+      ));
+      toast.success(`${selectedIds.size} alert${selectedIds.size > 1 ? 's' : ''} resolved`);
+      setSelectedIds(new Set());
+    } catch (err) {
+      toast.error('Failed to resolve alerts');
+    }
+  };
+
+  const handleStatusChange = async (id: string, newStatus: AlertStatus) => {
+    try {
+      await api.alerts.update(id, { status: newStatus });
+      setAlerts((prev) => prev.map((a) =>
+        a.id === id ? { ...a, status: newStatus, [newStatus === 'acknowledged' ? 'acknowledgedAt' : newStatus === 'resolved' ? 'resolvedAt' : '']: new Date().toISOString() } : a
+      ));
+      toast.success(`Alert marked as ${newStatus}`);
+    } catch (err) {
+      toast.error(`Failed to mark alert as ${newStatus}`);
+    }
   };
 
   const SortIcon = ({ k }: { k: SortKey }) =>

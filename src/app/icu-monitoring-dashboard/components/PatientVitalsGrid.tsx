@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { MOCK_PATIENTS } from '@/lib/mockData';
+import { api } from '@/lib/api';
 import { PatientStatusBadge } from '@/components/ui/StatusBadge';
 import NEWS2Badge from '@/components/ui/NEWS2Badge';
 import AIRiskBadge from '@/components/ui/AIRiskBadge';
@@ -48,8 +48,26 @@ const rowLeftBorder = (p: Patient) => {
 export default function PatientVitalsGrid({ onSelectPatient }: PatientVitalsGridProps) {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [wardFilter, setWardFilter]     = useState<string>('all');
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = MOCK_PATIENTS.filter((p) => {
+  React.useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const data = await api.patients.list();
+        setPatients(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPatients();
+    const interval = setInterval(fetchPatients, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const filtered = patients.filter((p) => {
     const statusOk = statusFilter === 'all' || p.status === statusFilter;
     const wardOk   = wardFilter === 'all' || p.wardId === wardFilter;
     return statusOk && wardOk;
@@ -57,6 +75,10 @@ export default function PatientVitalsGrid({ onSelectPatient }: PatientVitalsGrid
 
   const ORDER: Record<string, number> = { critical: 0, code: 0, warning: 1, watch: 2, stable: 3 };
   const sorted = [...filtered].sort((a, b) => (ORDER[a.status] ?? 4) - (ORDER[b.status] ?? 4));
+
+  if (loading) {
+    return <div className="animate-pulse h-64 bg-white/5 rounded-2xl w-full"></div>;
+  }
 
   return (
     <section>

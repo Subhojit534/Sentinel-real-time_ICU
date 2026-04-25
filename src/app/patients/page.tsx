@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import AppLayout from '@/components/AppLayout';
-import { MOCK_PATIENTS, MOCK_USERS } from '@/lib/mockData';
+import { api } from '@/lib/api';
 import { PatientStatusBadge } from '@/components/ui/StatusBadge';
 import NEWS2Badge from '@/components/ui/NEWS2Badge';
 import AIRiskBadge from '@/components/ui/AIRiskBadge';
@@ -144,8 +144,26 @@ export default function PatientsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [wardFilter, setWardFilter] = useState<string>('all');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = MOCK_PATIENTS.filter((p) => {
+  React.useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const data = await api.patients.list();
+        setPatients(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPatients();
+    const interval = setInterval(fetchPatients, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const filtered = patients.filter((p) => {
     const q = search.toLowerCase();
     const matchSearch = !search ||
       p.name.toLowerCase().includes(q) ||
@@ -161,11 +179,21 @@ export default function PatientsPage() {
   const sorted = [...filtered].sort((a, b) => (ORDER[a.status] ?? 4) - (ORDER[b.status] ?? 4));
 
   const statusCounts = {
-    critical: MOCK_PATIENTS.filter((p) => p.status === 'critical' || p.status === 'code').length,
-    warning:  MOCK_PATIENTS.filter((p) => p.status === 'warning').length,
-    watch:    MOCK_PATIENTS.filter((p) => p.status === 'watch').length,
-    stable:   MOCK_PATIENTS.filter((p) => p.status === 'stable').length,
+    critical: patients.filter((p) => p.status === 'critical' || p.status === 'code').length,
+    warning:  patients.filter((p) => p.status === 'warning').length,
+    watch:    patients.filter((p) => p.status === 'watch').length,
+    stable:   patients.filter((p) => p.status === 'stable').length,
   };
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="h-full flex items-center justify-center">
+          <div className="animate-pulse h-8 w-32 bg-white/10 rounded-lg"></div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -178,7 +206,7 @@ export default function PatientsPage() {
               <div>
                 <h1 className="text-xl font-bold text-white tracking-tight">Patients</h1>
                 <p className="text-xs mt-0.5" style={{ color: MUTED }}>
-                  {MOCK_PATIENTS.length} patients across all wards
+                  {patients.length} patients across all wards
                 </p>
               </div>
             </div>

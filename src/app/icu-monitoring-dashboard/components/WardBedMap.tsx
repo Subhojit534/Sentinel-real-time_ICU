@@ -1,5 +1,5 @@
 import React from 'react';
-export { default } from './DashboardCharts';
+
 const WardBedMap: React.FC = () => {
   React.useEffect(() => {
     // eslint-disable-next-line no-console
